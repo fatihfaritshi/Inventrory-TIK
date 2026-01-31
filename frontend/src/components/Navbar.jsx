@@ -6,8 +6,9 @@ export default function Navbar({ user }) {
 
   const pageTitles = {
     "/dashboard": "Dashboard",
-    "/aset": "Data Aset",
-    "/users": "Manajemen User",
+    "/aset": "Kelola Aset",
+    "/user": "Kelola User",
+    "/lokasi": "Kelola Lokasi",
     "/laporan": "Laporan",
   };
 

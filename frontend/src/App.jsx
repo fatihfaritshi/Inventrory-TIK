@@ -4,6 +4,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Lokasi from "./pages/Lokasi";
 import Aset from "./pages/Aset";
+import User from "./pages/User";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user")) || { role: "Administrator" };
@@ -17,7 +18,7 @@ function App() {
         {/* Halaman setelah login */}
         <Route element={<DashboardLayout role={user.role} />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          
+          <Route path="/user" element={<User />} />
           <Route path="/aset" element={<Aset />} /> 
           <Route path="/lokasi" element={<Lokasi />} />
         </Route>

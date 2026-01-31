@@ -6,7 +6,7 @@ export default function DashboardLayout() {
   // Ambil user dari localStorage
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Jika belum login, tendang ke login
+  // Jika belum login, redirect ke halaman login
   if (!user) {
     return <Navigate to="/" replace />;
   }

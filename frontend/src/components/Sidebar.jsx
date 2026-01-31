@@ -42,14 +42,21 @@ export default function Sidebar({ role }) {
       <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-800/50 rounded-full blur-[100px]" />
 
       {/* Logo */}
-      <div className="relative mb-14 text-center">
-        <h1 className="text-xl font-bold tracking-[0.3em] text-white">
-          INVENTORY
-        </h1>
-        <p className="text-xs text-blue-400 mt-2 tracking-widest">
-          ASSET MANAGEMENT
-        </p>
-      </div>
+        <div className="flex flex-col items-center mb-8 text-center">
+        <div className="relative mb-4">
+            {/* Blur circle background */}
+            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-60 rounded-full"></div>
+
+            {/* Icon container */}
+            <div className="relative bg-blue-800 p-4 rounded-full shadow-lg">
+            <ArchiveBoxIcon className="w-8 h-8 text-white" />
+            </div>
+        </div>
+
+        {/* Teks kecil */}
+        <p className="text-xs text-blue-400 tracking-widest">INVENTORY</p>
+        <p className="text-xs text-blue-400 tracking-widest">TIK POLDA SUMBAR</p>
+        </div>
 
       {/* Menu */}
       <nav className="relative space-y-2">
@@ -86,8 +93,36 @@ export default function Sidebar({ role }) {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-6 left-0 w-full text-center text-xs text-white/40 tracking-wide">
-        © 2026 Inventory System
+      <div className="absolute bottom-6 left-0 w-full flex flex-col items-center text-xs text-white/40 tracking-wide gap-2">
+        <button
+          onClick={() => {
+            // Hapus session/token dan redirect ke login
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            window.location.href = "/";
+          }}
+          className="
+            flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/40
+            text-red-400 hover:text-white rounded-xl transition
+          "
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5"
+            />
+          </svg>
+          Logout
+        </button>
+        <span>© Bidang TIK Polda Sumbar</span>
       </div>
     </aside>
   );
