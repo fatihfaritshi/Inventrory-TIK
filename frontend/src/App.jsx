@@ -2,8 +2,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+import Lokasi from "./pages/Lokasi";
+import Aset from "./pages/Aset";
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("user")) || { role: "Administrator" };
+
   return (
     <BrowserRouter>
       <Routes>
@@ -11,8 +15,11 @@ function App() {
         <Route path="/" element={<Login />} />
 
         {/* Halaman setelah login */}
-        <Route element={<DashboardLayout role="Administrator" />}>
+        <Route element={<DashboardLayout role={user.role} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          <Route path="/aset" element={<Aset />} /> 
+          <Route path="/lokasi" element={<Lokasi />} />
         </Route>
       </Routes>
     </BrowserRouter>

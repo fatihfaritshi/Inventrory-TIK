@@ -21,7 +21,7 @@ class LokasiController extends Controller
             'deskripsi' => 'nullable|string',
         ]);
 
-        $lokasi = Lokasi::create($validated);
+        $lokasi = Lokasi::create($request->all());
 
         return response()->json([
             'message' => 'Lokasi berhasil ditambahkan',

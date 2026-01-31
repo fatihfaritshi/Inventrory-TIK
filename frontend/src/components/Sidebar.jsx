@@ -5,13 +5,15 @@ import {
   UsersIcon,
   DocumentChartBarIcon,
 } from "@heroicons/react/24/outline";
+import { MapPinIcon } from "@heroicons/react/24/solid";
 
 export default function Sidebar({ role }) {
   const menus = {
     Administrator: [
       { name: "Dashboard", path: "/dashboard", icon: Squares2X2Icon },
-      { name: "Data Aset", path: "/aset", icon: ArchiveBoxIcon },
-      { name: "Manajemen User", path: "/users", icon: UsersIcon },
+      { name: "Kelola User", path: "/user", icon: UsersIcon },
+      { name: "Kelola Aset", path: "/aset", icon: ArchiveBoxIcon },
+      { name: "Kelola Lokasi", path: "/lokasi", icon: MapPinIcon },
       { name: "Laporan", path: "/laporan", icon: DocumentChartBarIcon },
     ],
     Petugas: [
