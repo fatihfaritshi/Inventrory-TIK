@@ -111,7 +111,7 @@ export default function User() {
       {/* ================= STAT CARD ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* TOTAL USER */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
           <div>
             <p className="text-sm opacity-90">Total User</p>
             <p className="text-3xl font-bold">{users.length}</p>
@@ -120,7 +120,7 @@ export default function User() {
         </div>
 
         {/* ADMINISTRATOR */}
-        <div className="bg-gradient-to-r from-lime-500 to-lime-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-lime-500 to-lime-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
           <div>
             <p className="text-sm opacity-90">Administrator</p>
             <p className="text-3xl font-bold">
@@ -131,7 +131,7 @@ export default function User() {
         </div>
 
         {/* PETUGAS */}
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
           <div>
             <p className="text-sm opacity-90">Petugas</p>
             <p className="text-3xl font-bold">
@@ -142,7 +142,7 @@ export default function User() {
         </div>
 
         {/* PIMPINAN */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
           <div>
             <p className="text-sm opacity-90">Pimpinan</p>
             <p className="text-3xl font-bold">

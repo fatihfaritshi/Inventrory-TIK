@@ -93,7 +93,7 @@ export default function Sidebar({ role }) {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-6 left-0 w-full flex flex-col items-center text-xs text-white/40 tracking-wide gap-2">
+      <div className="absolute bottom-8 left-0 w-full flex flex-col items-center text-xs text-white/40 tracking-wide gap-4">
         <button
           onClick={() => {
             // Hapus session/token dan redirect ke login
@@ -102,13 +102,13 @@ export default function Sidebar({ role }) {
             window.location.href = "/";
           }}
           className="
-            flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/40
+            flex items-center gap-2 px-4 py-3 bg-red-500/20 hover:bg-red-500/40
             text-red-400 hover:text-white rounded-xl transition
           "
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
+            className="w-6 h-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

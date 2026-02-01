@@ -104,17 +104,50 @@ export default function Lokasi() {
   return (
     <div className="p-6 bg-gray-100 min-h-full space-y-6">
       {/* ================= STAT CARD ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow p-5 flex items-center gap-4">
-          <div className="p-3 bg-yellow-100 rounded-full">
-            <MapPinIcon className="w-6 h-6 text-yellow-600" />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* TOTAL LOKASI */}
+        <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Total Lokasi</p>
-            <p className="text-2xl font-bold text-gray-800">
-              {lokasis.length}
+            <p className="text-sm opacity-90">Total Lokasi</p>
+            <p className="text-3xl font-bold">{lokasis.length}</p>
+          </div>
+          <MapPinIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* LOKASI DENGAN ASET */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Lokasi Beraset</p>
+            <p className="text-3xl font-bold">
+              {lokasis.filter((l) => (l.asets_count ?? 0) > 0).length}
             </p>
           </div>
+          <MapPinIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* TOTAL ASET */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Total Aset</p>
+            <p className="text-3xl font-bold">
+              {lokasis.reduce(
+                (total, l) => total + (l.asets_count ?? 0),
+                0
+              )}
+            </p>
+          </div>
+          <MapPinIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* LOKASI KOSONG */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Lokasi Kosong</p>
+            <p className="text-3xl font-bold">
+              {lokasis.filter((l) => (l.asets_count ?? 0) === 0).length}
+            </p>
+          </div>
+          <MapPinIcon className="w-10 h-10 opacity-80" />
         </div>
       </div>
 

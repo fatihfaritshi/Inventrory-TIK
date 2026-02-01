@@ -131,7 +131,7 @@ export default function Asets() {
         <button
           onClick={openCreateModal}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg shadow hover:bg-blue-500 transition"
+              hover:from-yellow-500 hover:to-yellow-700 font-semibold text-white rounded-lg shadow hover:bg-blue-500 transition"
         >
           <PlusIcon className="w-5 h-5" />
           Tambah Aset
@@ -154,8 +154,9 @@ export default function Asets() {
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Lokasi</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Tanggal</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Foto</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Status Inventaris</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -175,11 +176,12 @@ export default function Asets() {
                       <span className="text-gray-400">Tidak ada</span>
                     )}
                   </td>
+                  <td className="px-6 py-3 text-sm text-gray-700">{aset.status_inventaris}</td>
                   <td className="px-6 py-3 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       aset.status.toLowerCase() === "aktif"
-                        ? "bg-green-200 text-green-900"
-                        : "bg-red-200 text-red-900"
+                        ? "bg-lime-300 text-lime-900"
+                        : "bg-red-300 text-red-900"
                     }`}>
                       {aset.status}
                     </span>
@@ -199,6 +201,7 @@ export default function Asets() {
                     </button>
                   </td>
                 </tr>
+          
               ))}
               {asets.length === 0 && !loading && (
                 <tr>
