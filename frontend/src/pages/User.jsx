@@ -1,13 +1,26 @@
 // frontend/pages/User.jsx
 import React, { useEffect, useState } from "react";
-import { PencilIcon, TrashIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  PencilIcon,
+  TrashIcon,
+  PlusIcon,
+  XMarkIcon,
+  UsersIcon,
+} from "@heroicons/react/24/solid";
 
 export default function User() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ id: null, username: "", password: "", role: "Petugas" });
   const [isEdit, setIsEdit] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const [formData, setFormData] = useState({
+    id: null,
+    username: "",
+    password: "",
+    role: "Petugas",
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -18,7 +31,7 @@ export default function User() {
     fetch("http://127.0.0.1:8000/api/users")
       .then((res) => res.json())
       .then((result) => {
-        setUsers(result || []); // pastikan sesuai response JSON
+        setUsers(result.data || result || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -47,7 +60,7 @@ export default function User() {
 
   const openEditModal = (user) => {
     setIsEdit(true);
-    setFormData({ ...user, password: "" }); // kosongkan password saat edit
+    setFormData({ ...user, password: "" });
     setModalOpen(true);
   };
 
@@ -65,82 +78,156 @@ export default function User() {
 
     const method = isEdit ? "PUT" : "POST";
 
-    // Jangan kirim password kosong saat edit
     const payload = { ...formData };
     if (isEdit && !payload.password) delete payload.password;
 
     fetch(url, {
-      method: method,
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
       .then(async (res) => {
-        const data = await res.json();
+        const result = await res.json();
         if (!res.ok) {
-          console.error("Error:", data);
-          alert("Gagal menyimpan user. Periksa console.");
+          alert(result.message || "Gagal menyimpan user");
           return;
         }
-        alert(data.message);
+        alert(result.message);
         setModalOpen(false);
         fetchUsers();
       })
       .catch((err) => console.error(err));
   };
 
+  // 🔍 SEARCH FILTER
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(search.toLowerCase()) ||
+      user.role.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="p-6 bg-gray-100 min-h-full">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar User</h1>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg shadow transition"
-        >
-          <PlusIcon className="w-5 h-5" />
-          Tambah User
-        </button>
+    <div className="p-6 bg-gray-100 min-h-full space-y-6">
+      {/* ================= STAT CARD ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* TOTAL USER */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Total User</p>
+            <p className="text-3xl font-bold">{users.length}</p>
+          </div>
+          <UsersIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* ADMINISTRATOR */}
+        <div className="bg-gradient-to-r from-lime-500 to-lime-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Administrator</p>
+            <p className="text-3xl font-bold">
+              {users.filter((u) => u.role === "Administrator").length}
+            </p>
+          </div>
+          <UsersIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* PETUGAS */}
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Petugas</p>
+            <p className="text-3xl font-bold">
+              {users.filter((u) => u.role === "Petugas").length}
+            </p>
+          </div>
+          <UsersIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* PIMPINAN */}
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Pimpinan</p>
+            <p className="text-3xl font-bold">
+              {users.filter((u) => u.role === "Pimpinan").length}
+            </p>
+          </div>
+          <UsersIcon className="w-10 h-10 opacity-80" />
+        </div>
       </div>
 
-      {/* Tabel */}
+      {/* ================= HEADER ================= */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Daftar User</h1>
+
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Cari username / role..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+          />
+
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
+              hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg shadow transition"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Tambah User
+          </button>
+        </div>
+      </div>
+
+      {/* ================= TABEL ================= */}
       <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 overflow-x-auto">
         {loading ? (
-          <div className="text-center py-10 text-gray-600">Loading data user...</div>
+          <div className="text-center py-10 text-gray-600">
+            Loading data user...
+          </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Username</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  Username
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-3 text-sm text-gray-700">{user.username}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{user.role}</td>
-                  <td className="px-6 py-3 text-sm flex gap-2">
+                  <td className="px-6 py-3 text-sm text-gray-700">
+                    {user.username}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-700">
+                    {user.role}
+                  </td>
+                  <td className="px-6 py-3 text-sm flex justify-center gap-2">
                     <button
                       onClick={() => openEditModal(user)}
-                      className="p-2 bg-yellow-400 text-white rounded hover:bg-yellow-300 transition"
+                      className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(user.id)}
-                      className="p-2 bg-red-500 text-white rounded hover:bg-red-400 transition"
+                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && !loading && (
+
+              {filteredUsers.length === 0 && !loading && (
                 <tr>
                   <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                    Belum ada data user
+                    Data user tidak ditemukan
                   </td>
                 </tr>
               )}
@@ -149,7 +236,7 @@ export default function User() {
         )}
       </div>
 
-      {/* Modal Form */}
+      {/* ================= MODAL ================= */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
@@ -159,7 +246,11 @@ export default function User() {
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-4">{isEdit ? "Edit User" : "Tambah User"}</h2>
+
+            <h2 className="text-xl font-bold mb-4">
+              {isEdit ? "Edit User" : "Tambah User"}
+            </h2>
+
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="flex flex-col">
                 <label>Username</label>
@@ -172,18 +263,19 @@ export default function User() {
                   required
                 />
               </div>
+
               <div className="flex flex-col">
-                <label>Password {isEdit && "(biarkan kosong jika tidak diubah)"}</label>
+                <label>Password {isEdit && "(kosongkan jika tidak diubah)"}</label>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   className="border px-3 py-2 rounded"
-                  placeholder={isEdit ? "••••••" : ""}
-                  required={!isEdit} // wajib saat create
+                  required={!isEdit}
                 />
               </div>
+
               <div className="flex flex-col">
                 <label>Role</label>
                 <select
@@ -191,12 +283,12 @@ export default function User() {
                   value={formData.role}
                   onChange={handleChange}
                   className="border px-3 py-2 rounded"
-                  required
                 >
                   <option value="Administrator">Administrator</option>
                   <option value="Petugas">Petugas</option>
                 </select>
               </div>
+
               <button
                 type="submit"
                 className="w-full py-2 bg-gradient-to-r from-blue-400 to-blue-600

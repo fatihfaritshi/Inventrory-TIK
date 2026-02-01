@@ -10,7 +10,12 @@ class LokasiController extends Controller
     // GET /api/lokasis
     public function index()
     {
-        return response()->json(Lokasi::all());
+        $lokasis = Lokasi::withCount('asets')->get();
+
+        return response()->json([
+            'message' => 'Data lokasi berhasil diambil',
+            'data' => $lokasis
+        ]);
     }
 
     // POST /api/lokasis
@@ -21,7 +26,7 @@ class LokasiController extends Controller
             'deskripsi' => 'nullable|string',
         ]);
 
-        $lokasi = Lokasi::create($request->all());
+        $lokasi = Lokasi::create($validated);
 
         return response()->json([
             'message' => 'Lokasi berhasil ditambahkan',

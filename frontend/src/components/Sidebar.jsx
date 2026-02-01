@@ -54,7 +54,7 @@ export default function Sidebar({ role }) {
         </div>
 
         {/* Teks kecil */}
-        <p className="text-xs text-blue-400 tracking-widest">INVENTORY</p>
+        <p className="text-xs text-white tracking-widest">INVENTORY</p>
         <p className="text-xs text-blue-400 tracking-widest">TIK POLDA SUMBAR</p>
         </div>
 
@@ -72,7 +72,7 @@ export default function Sidebar({ role }) {
                 transition-all duration-300
                 ${
                   isActive
-                    ? "bg-blue-600/20 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
+                    ? "bg-blue-600/40 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                     : "hover:bg-white/5"
                 }
                 `

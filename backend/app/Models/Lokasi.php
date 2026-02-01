@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Aset; 
 
 class Lokasi extends Model
 {
@@ -16,9 +17,8 @@ class Lokasi extends Model
         'deskripsi',
     ];
 
-    // Relasi ke aset (1 lokasi punya banyak aset)
     public function asets()
     {
-        return $this->hasMany(Asets::class, 'lokasi_id');
+        return $this->hasMany(Aset::class, 'lokasi_id');
     }
 }

@@ -4,62 +4,78 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
-class UsersController
+class UsersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // GET /api/users?search=
+    public function index(Request $request)
     {
-        //
+        $search = $request->query('search');
+
+        $users = User::when($search, function ($query, $search) {
+            $query->where('username', 'like', "%$search%")
+                  ->orWhere('role', 'like', "%$search%");
+        })->get();
+
+        return response()->json([
+            'message' => 'Data user berhasil diambil',
+            'data' => $users
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // POST /api/users
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'username' => 'required|string|max:50|unique:users,username',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:Administrator,Petugas,Pimpinan',
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
+
+        return response()->json([
+            'message' => 'User berhasil ditambahkan',
+            'data' => $user
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Users $users)
+    // PUT /api/users/{id}
+    public function update(Request $request, $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'username' => 'required|string|max:50|unique:users,username,' . $id,
+            'password' => 'nullable|string|min:6',
+            'role' => 'required|in:Administrator,Petugas,Pimpinan',
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'User berhasil diperbarui',
+            'data' => $user
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Users $users)
+    // DELETE /api/users/{id}
+    public function destroy($id)
     {
-        //
-    }
+        $user = User::findOrFail($id);
+        $user->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Users $users)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Users $users)
-    {
-        //
+        return response()->json([
+            'message' => 'User berhasil dihapus'
+        ]);
     }
 }
