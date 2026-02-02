@@ -8,7 +8,6 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\PemeliharaanController;
 
-
 // routes/api.php
 Route::get('/test', function () {
     return response()->json([

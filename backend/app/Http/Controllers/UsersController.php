@@ -8,15 +8,20 @@ use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
 {
-    // GET /api/users?search=
+    // =======================
+    // GET /api/users
+    // =======================
     public function index(Request $request)
     {
         $search = $request->query('search');
 
         $users = User::when($search, function ($query, $search) {
-            $query->where('username', 'like', "%$search%")
-                  ->orWhere('role', 'like', "%$search%");
-        })->get();
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%");
+            });
+        })->orderBy('id', 'desc')->get();
 
         return response()->json([
             'message' => 'Data user berhasil diambil',
@@ -24,18 +29,24 @@ class UsersController extends Controller
         ]);
     }
 
+    // =======================
     // POST /api/users
+    // =======================
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'nama' => 'required|string|max:255',
             'username' => 'required|string|max:50|unique:users,username',
             'password' => 'required|string|min:6',
             'role' => 'required|in:Administrator,Petugas,Pimpinan',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-
-        $user = User::create($validated);
+        $user = User::create([
+            'nama' => $validated['nama'],
+            'username' => $validated['username'],
+            'password' => Hash::make($validated['password']), // WAJIB HASH
+            'role' => $validated['role'],
+        ]);
 
         return response()->json([
             'message' => 'User berhasil ditambahkan',
@@ -43,21 +54,25 @@ class UsersController extends Controller
         ], 201);
     }
 
+    // =======================
     // PUT /api/users/{id}
+    // =======================
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
+            'nama' => 'required|string|max:255',
             'username' => 'required|string|max:50|unique:users,username,' . $id,
             'password' => 'nullable|string|min:6',
             'role' => 'required|in:Administrator,Petugas,Pimpinan',
         ]);
 
-        if (!empty($validated['password'])) {
+        // Jika password diisi → hash
+        if ($request->filled('password')) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
-            unset($validated['password']);
+            unset($validated['password']); // penting!
         }
 
         $user->update($validated);
@@ -68,7 +83,9 @@ class UsersController extends Controller
         ]);
     }
 
+    // =======================
     // DELETE /api/users/{id}
+    // =======================
     public function destroy($id)
     {
         $user = User::findOrFail($id);

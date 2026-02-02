@@ -124,7 +124,7 @@ export default function Asets() {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-full">
+    <div className=" bg-gray-100 min-h-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Daftar Aset</h1>

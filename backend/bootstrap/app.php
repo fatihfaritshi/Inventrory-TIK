@@ -12,15 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(HandleCors::class);
-        //
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+
+        $middleware->api([
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
     })
-    ->withMiddleware(function (Middleware $middleware) {
-    $middleware->api([
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-    ]);
-    })
+
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

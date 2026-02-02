@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+import Laporan from "./pages/Laporan";
 import Lokasi from "./pages/Lokasi";
 import Aset from "./pages/Aset";
 import User from "./pages/User";
@@ -21,6 +22,7 @@ function App() {
           <Route path="/user" element={<User />} />
           <Route path="/aset" element={<Aset />} /> 
           <Route path="/lokasi" element={<Lokasi />} />
+          <Route path="/laporan" element={<Laporan />} />
         </Route>
       </Routes>
     </BrowserRouter>

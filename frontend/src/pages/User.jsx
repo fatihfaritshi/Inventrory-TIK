@@ -17,6 +17,7 @@ export default function User() {
 
   const [formData, setFormData] = useState({
     id: null,
+    nama: "",
     username: "",
     password: "",
     role: "Petugas",
@@ -54,7 +55,7 @@ export default function User() {
 
   const openCreateModal = () => {
     setIsEdit(false);
-    setFormData({ id: null, username: "", password: "", role: "Petugas" });
+    setFormData({ id: null, nama: "", username: "", password: "", role: "Petugas" });
     setModalOpen(true);
   };
 
@@ -78,8 +79,15 @@ export default function User() {
 
     const method = isEdit ? "PUT" : "POST";
 
-    const payload = { ...formData };
-    if (isEdit && !payload.password) delete payload.password;
+    let payload = {
+      nama: formData.nama,
+      username: formData.username,
+      role: formData.role,
+    };
+
+    if (!isEdit || formData.password) {
+      payload.password = formData.password;
+    }
 
     fetch(url, {
       method,
@@ -90,6 +98,7 @@ export default function User() {
         const result = await res.json();
         if (!res.ok) {
           alert(result.message || "Gagal menyimpan user");
+          console.error(result);
           return;
         }
         alert(result.message);
@@ -98,10 +107,12 @@ export default function User() {
       })
       .catch((err) => console.error(err));
   };
+  
 
   // 🔍 SEARCH FILTER
   const filteredUsers = users.filter(
     (user) =>
+      user.nama.toLowerCase().includes(search.toLowerCase()) ||
       user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.role.toLowerCase().includes(search.toLowerCase())
   );
@@ -169,7 +180,7 @@ export default function User() {
           <button
             onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg shadow transition"
+              hover:from-yellow-500 hover:to-yellow-700 text-white font-semibold rounded-lg shadow transition"
           >
             <PlusIcon className="w-5 h-5" />
             Tambah User
@@ -178,7 +189,7 @@ export default function User() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-800 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data user...
@@ -189,6 +200,9 @@ export default function User() {
               <tr className="bg-gray-50">
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
                   Username
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  Nama 
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
                   Role
@@ -203,6 +217,9 @@ export default function User() {
                 <tr key={user.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-3 text-sm text-gray-700">
                     {user.username}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-700">
+                    {user.nama}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-700">
                     {user.role}
@@ -252,6 +269,19 @@ export default function User() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+
+              <div className="flex flex-col">
+                  <label>Nama</label>
+                  <input
+                    type="text"
+                    name="nama"
+                    value={formData.nama}
+                    onChange={handleChange}
+                    className="border px-3 py-2 rounded"
+                    required
+                  />
+                </div>
+
               <div className="flex flex-col">
                 <label>Username</label>
                 <input
@@ -286,6 +316,7 @@ export default function User() {
                 >
                   <option value="Administrator">Administrator</option>
                   <option value="Petugas">Petugas</option>
+                  <option value="Pimpinan">Pimpinan</option>
                 </select>
               </div>
 

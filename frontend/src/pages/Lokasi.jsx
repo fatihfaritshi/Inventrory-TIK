@@ -167,7 +167,7 @@ export default function Lokasi() {
           <button
             onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg shadow transition"
+              hover:from-yellow-500 hover:to-yellow-700 font-semibold text-white rounded-lg shadow transition"
           >
             <PlusIcon className="w-5 h-5" />
             Tambah Lokasi
@@ -176,7 +176,7 @@ export default function Lokasi() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-900 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data lokasi...
