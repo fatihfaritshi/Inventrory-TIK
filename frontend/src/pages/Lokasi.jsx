@@ -166,8 +166,8 @@ export default function Lokasi() {
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 font-semibold text-white rounded-lg shadow transition"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
+              hover:from-yellow-500 hover:to-yellow-600 font-semibold text-white rounded-lg shadow transition"
           >
             <PlusIcon className="w-5 h-5" />
             Tambah Lokasi
@@ -212,15 +212,32 @@ export default function Lokasi() {
                     {lokasi.asets_count ?? 0}
                   </td>
                   <td className="px-6 py-3 text-sm flex justify-center gap-2">
+                    {/* EDIT */}
                     <button
                       onClick={() => openEditModal(lokasi)}
-                      className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-yellow-500
+                        text-yellow-500
+                        hover:bg-yellow-500 hover:text-white
+                        transition
+                        "
+                      title="Edit"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
+                                        
+                    {/* DELETE */}
                     <button
                       onClick={() => handleDelete(lokasi.id)}
-                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-red-500
+                        text-red-500
+                        hover:bg-red-500 hover:text-white
+                        transition
+                        "
+                      title="Hapus"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -242,47 +259,88 @@ export default function Lokasi() {
 
       {/* ================= MODAL ================= */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div
+            className="
+              w-full max-w-md
+              bg-[#0f172a]/70 backdrop-blur-xl
+              border border-white/30
+              p-8 rounded-2xl
+              shadow-2xl
+              relative
+            "
+          >
+            {/* CLOSE */}
             <button
               onClick={() => setModalOpen(false)}
-              className="absolute top-3 right-3 p-2 hover:bg-gray-200 rounded-full"
+              className="
+                absolute top-3 right-3
+                p-2 rounded-full
+                text-white
+                transition-all duration-200
+                hover:bg-red-500/30 hover:text-red-300
+                active:scale-95
+              "
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-bold mb-4">
+            {/* TITLE */}
+            <h2 className="text-xl font-bold text-white mb-4">
               {isEdit ? "Edit Lokasi" : "Tambah Lokasi"}
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="flex flex-col">
-                <label>Nama Lokasi</label>
+            {/* FORM */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              {/* NAMA LOKASI */}
+              <div>
+                <label className="text-white/80 text-sm">Nama Lokasi</label>
                 <input
                   type="text"
                   name="nama_lokasi"
                   value={formData.nama_lokasi}
                   onChange={handleChange}
-                  className="border px-3 py-2 rounded"
                   required
+                  className="
+                    w-full mt-1 px-3 py-2 rounded-lg
+                    bg-white/10 text-white
+                    border border-white/20
+                    placeholder-white/40
+                    focus:outline-none focus:ring-2 focus:ring-blue-400
+                  "
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label>Deskripsi</label>
+              {/* DESKRIPSI */}
+              <div>
+                <label className="text-white/80 text-sm">Deskripsi</label>
                 <textarea
                   name="deskripsi"
                   value={formData.deskripsi}
                   onChange={handleChange}
-                  className="border px-3 py-2 rounded"
                   rows={3}
+                  className="
+                    w-full mt-1 px-3 py-2 rounded-lg
+                    bg-white/10 text-white
+                    border border-white/20
+                    placeholder-white/40
+                    focus:outline-none focus:ring-2 focus:ring-blue-400
+                  "
                 />
               </div>
 
+              {/* BUTTON */}
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-                  hover:from-yellow-500 hover:to-yellow-700 text-white rounded-lg mt-3 transition"
+                className="
+                  w-full py-2 mt-4
+                  bg-gradient-to-r from-blue-500 to-blue-700
+                  hover:from-yellow-500 hover:to-yellow-600
+                  text-white font-semibold
+                  rounded-lg
+                  transition
+                "
               >
                 {isEdit ? "Update Lokasi" : "Tambah Lokasi"}
               </button>

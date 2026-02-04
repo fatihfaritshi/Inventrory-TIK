@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class LokasiController extends Controller
 {
+    
     // GET /api/lokasis
     public function index()
     {

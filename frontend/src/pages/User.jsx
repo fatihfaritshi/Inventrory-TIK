@@ -20,7 +20,7 @@ export default function User() {
     nama: "",
     username: "",
     password: "",
-    role: "Petugas",
+    role: "",
   });
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function User() {
 
   const openCreateModal = () => {
     setIsEdit(false);
-    setFormData({ id: null, nama: "", username: "", password: "", role: "Petugas" });
+    setFormData({ id: null, nama: "", username: "", password: "", role: "" });
     setModalOpen(true);
   };
 
@@ -116,6 +116,18 @@ export default function User() {
       user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.role.toLowerCase().includes(search.toLowerCase())
   );
+
+  const inputClass = `
+    w-full
+    bg-white/5 text-white
+    border border-white/20
+    rounded-lg px-3 py-2
+    backdrop-blur-md
+    focus:outline-none
+    focus:ring-2 focus:ring-blue-400/50
+    placeholder-white/40
+    transition
+  `;
 
   return (
     <div className="p-6 bg-gray-100 min-h-full space-y-6">
@@ -179,8 +191,8 @@ export default function User() {
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 text-white font-semibold rounded-lg shadow transition"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
+              hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow transition"
           >
             <PlusIcon className="w-5 h-5" />
             Tambah User
@@ -225,15 +237,32 @@ export default function User() {
                     {user.role}
                   </td>
                   <td className="px-6 py-3 text-sm flex justify-center gap-2">
+                    {/* EDIT */}
                     <button
                       onClick={() => openEditModal(user)}
-                      className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-yellow-500
+                        text-yellow-500
+                        hover:bg-yellow-500 hover:text-white
+                        transition
+                        "
+                      title="Edit"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
+                    
+                    {/* DELETE */}
                     <button
                       onClick={() => handleDelete(user.id)}
-                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-red-500
+                        text-red-500
+                        hover:bg-red-500 hover:text-white
+                        transition
+                        "
+                      title="Hapus"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -255,75 +284,96 @@ export default function User() {
 
       {/* ================= MODAL ================= */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="
+            w-full max-w-md
+            bg-[#0f172a]/70 backdrop-blur-xl
+            border border-white/30
+            p-8 rounded-2xl
+            shadow-2xl
+            relative
+          ">
             <button
               onClick={() => setModalOpen(false)}
-              className="absolute top-3 right-3 p-2 hover:bg-gray-200 rounded-full"
+              className="
+                absolute top-3 right-3
+                p-2 rounded-full
+                text-white
+                transition-all duration-200
+                hover:bg-red-500/30 hover:text-red-300
+                active:scale-95
+              "
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="text-xl font-bold text-white mb-4">
               {isEdit ? "Edit User" : "Tambah User"}
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4">
 
-              <div className="flex flex-col">
-                  <label>Nama</label>
-                  <input
-                    type="text"
-                    name="nama"
-                    value={formData.nama}
-                    onChange={handleChange}
-                    className="border px-3 py-2 rounded"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="text-white/80 text-sm">Nama</label>
+                <input
+                  type="text"
+                  name="nama"
+                  value={formData.nama}
+                  onChange={handleChange}
+                  className={inputClass}
+                  autoComplete="off"
+                  required
+                />
+              </div>
 
-              <div className="flex flex-col">
-                <label>Username</label>
+              <div>
+                <label className="text-white/80 text-sm">Username</label>
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  className="border px-3 py-2 rounded"
+                  className={inputClass}
+                  autoComplete="new-username"
                   required
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label>Password {isEdit && "(kosongkan jika tidak diubah)"}</label>
+              <div>
+                <label className="text-white/80 text-sm">
+                  Password {isEdit && "(opsional)"}
+                </label>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="border px-3 py-2 rounded"
+                  className={inputClass}
+                  autoComplete="new-password"
                   required={!isEdit}
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label>Role</label>
+              <div>
+                <label className="text-white/80 text-sm">Role</label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="border px-3 py-2 rounded"
+                  className={inputClass}
+                  required
                 >
-                  <option value="Administrator">Administrator</option>
-                  <option value="Petugas">Petugas</option>
-                  <option value="Pimpinan">Pimpinan</option>
+                  <option value="">-- Pilih Role --</option>
+                  <option className="text-black">Administrator</option>
+                  <option className="text-black">Petugas</option>
+                  <option className="text-black">Pimpinan</option>
                 </select>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-blue-400 to-blue-600
-                  hover:from-blue-500 hover:to-blue-700 text-white rounded-lg mt-3 transition"
+                className="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-700
+              hover:from-yellow-500 hover:to-yellow-600 text-white rounded-lg mt-4"
               >
                 {isEdit ? "Update User" : "Tambah User"}
               </button>

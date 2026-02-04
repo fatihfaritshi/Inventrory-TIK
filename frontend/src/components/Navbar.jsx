@@ -145,10 +145,13 @@ function UserProfileModal({ user, onClose }) {
         <button
           onClick={onClose}
           className="
-            absolute top-4 right-4 p-2 rounded-full
-            bg-white/10 hover:bg-white/40
-            transition
-          "
+                absolute top-3 right-3
+                p-2 rounded-full
+                text-white
+                transition-all duration-200
+                hover:bg-red-500/30 hover:text-red-300
+                active:scale-95
+              "
         >
           <XMarkIcon className="w-5 h-5 text-white" />
         </button>
@@ -267,7 +270,7 @@ function UserProfileModal({ user, onClose }) {
               className="
                 px-4 py-2 rounded-lg font-semibold
                 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-blue-600 hover:to-blue-800
+              hover:from-yellow-500 hover:to-yellow-600
                 disabled:opacity-50 disabled:cursor-not-allowed
                 shadow-lg
               "

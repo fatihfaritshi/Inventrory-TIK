@@ -1,6 +1,15 @@
 // frontend/pages/Asets.jsx
 import React, { useEffect, useState } from "react";
-import { PencilIcon, TrashIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {  ArchiveBoxIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  Squares2X2Icon,
+  PencilIcon, 
+  TrashIcon, 
+  PlusIcon, 
+  XMarkIcon,
+  EyeIcon
+} from "@heroicons/react/24/solid";
 
 export default function Asets() {
   const [asets, setAsets] = useState([]);
@@ -22,12 +31,17 @@ export default function Asets() {
     foto_aset: null,
   });
   const [isEdit, setIsEdit] = useState(false);
+  const [lokasiList, setLokasiList] = useState([]);
+  const [search, setSearch] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedAset, setSelectedAset] = useState(null);
 
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user")) || { username: "Guest", role: "Petugas" };
 
   useEffect(() => {
     fetchAsets();
+    fetchLokasi();
   }, []);
 
   const fetchAsets = () => {
@@ -43,6 +57,17 @@ export default function Asets() {
         setLoading(false);
       });
   };
+
+  const fetchLokasi = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/lokasis");
+    const json = await res.json();
+    console.log("DATA LOKASI:", json.data); // DEBUG WAJIB
+    setLokasiList(json.data || []);
+  } catch (err) {
+    console.error("Gagal fetch lokasi:", err);
+  }
+};
 
   const handleDelete = (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus aset ini?")) return;
@@ -76,7 +101,13 @@ export default function Asets() {
     setModalOpen(true);
   };
 
+  const openDetailModal = (aset) => {
+    setSelectedAset(aset);
+    setDetailOpen(true);
+  };
+
   const openEditModal = (aset) => {
+    setSelectedAset(aset);
     setIsEdit(true);
     setFormData({
       ...aset,
@@ -98,9 +129,15 @@ export default function Asets() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const form = new FormData();
+  const form = new FormData();
     for (const key in formData) {
-      if (formData[key] !== null) form.append(key, formData[key]);
+      if (
+        formData[key] !== null &&
+        formData[key] !== "" &&
+        key !== "id"
+      ) {
+        form.append(key, formData[key]);
+      }
     }
 
     const url = isEdit
@@ -111,35 +148,125 @@ export default function Asets() {
     if (isEdit) form.append("_method", "PUT"); // Laravel method spoofing
 
     fetch(url, {
-      method: method,
+      method,
       body: form,
     })
-      .then((res) => res.json())
-      .then((result) => {
-        alert(result.message);
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error("VALIDATION ERROR:", data);
+          alert(
+            data.message ||
+            Object.values(data.errors || {}).flat().join("\n")
+          );
+          return;
+        }
+
+        alert(data.message);
         setModalOpen(false);
         fetchAsets();
       })
-      .catch((err) => console.error(err));
+      .catch(err => console.error(err));
   };
 
+  // 🔍 SEARCH FILTER
+  const filteredAsets = asets.filter((aset) => {
+  const keyword = search.toLowerCase();
+
   return (
-    <div className=" bg-gray-100 min-h-full">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+    aset.nama_aset?.toLowerCase().includes(keyword) ||
+    aset.jenis_aset?.toLowerCase().includes(keyword) ||
+    aset.detail_aset?.toLowerCase().includes(keyword) ||
+    aset.kode_aset?.toLowerCase().includes(keyword) ||
+    aset.lokasi?.nama_lokasi?.toLowerCase().includes(keyword)
+  );
+});
+
+  const inputGlass = `
+  w-full mt-1 px-3 py-2 rounded-lg
+  bg-white/10 text-white
+  border border-white/20
+  placeholder-white/40
+  focus:outline-none focus:ring-2 focus:ring-blue-400
+`;
+
+  return (
+    <div className="bg-gray-100 min-h-full space-y-6">
+
+      {/* ================= STAT CARD ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        {/* TOTAL ASET */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Total Aset</p>
+            <p className="text-3xl font-bold">{asets.length}</p>
+          </div>
+          <ArchiveBoxIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* ASET AKTIF */}
+        <div className="bg-gradient-to-r from-lime-500 to-lime-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Aset Aktif</p>
+            <p className="text-3xl font-bold">
+              {asets.filter(a => a.status === "Aktif").length}
+            </p>
+          </div>
+          <CheckCircleIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* ASET NON-AKTIF */}
+        <div className="bg-gradient-to-r from-red-500 to-red-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Aset Non-Aktif</p>
+            <p className="text-3xl font-bold">
+              {asets.filter(a => a.status === "Non-Aktif").length}
+            </p>
+          </div>
+          <XCircleIcon className="w-10 h-10 opacity-80" />
+        </div>
+
+        {/* STATUS INVENTARIS */}
+        <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90">Aset INTRA</p>
+            <p className="text-3xl font-bold">
+              {asets.filter(a => a.status_inventaris === "INTRA").length}
+            </p>
+          </div>
+          <Squares2X2Icon className="w-10 h-10 opacity-80" />
+        </div>
+
+      </div>
+
+      {/* ================= HEADER ================= */}
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Daftar Aset</h1>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 to-yellow-600
-              hover:from-yellow-500 hover:to-yellow-700 font-semibold text-white rounded-lg shadow hover:bg-blue-500 transition"
-        >
-          <PlusIcon className="w-5 h-5" />
-          Tambah Aset
-        </button>
+
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Cari aset..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+          />
+
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
+              hover:from-yellow-500 hover:to-yellow-600 font-semibold text-white rounded-lg shadow transition"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Tambah Aset
+          </button>
+        </div>
       </div>
 
       {/* Tabel */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-700 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">Loading data aset...</div>
         ) : (
@@ -160,7 +287,7 @@ export default function Asets() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {asets.map((aset) => (
+              {filteredAsets.map((aset) => (
                 <tr key={aset.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-3 text-sm text-gray-700">{aset.kode_aset}</td>
                   <td className="px-6 py-3 text-sm text-gray-700">{aset.nama_aset}</td>
@@ -186,19 +313,53 @@ export default function Asets() {
                       {aset.status}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm flex gap-2">
+                  <td className="px-6 py-3 text-sm flex gap-2 justify-center">
+
+                    {/* DETAIL */}
+                    <button
+                      onClick={() => openDetailModal(aset)}
+                      className="
+                        p-2 rounded-lg
+                        border border-purple-500
+                        text-purple-500
+                        hover:bg-purple-500 hover:text-white
+                        transition
+                      "
+                      title="Lihat Detail"
+                    >
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+
+                    {/* EDIT */}
                     <button
                       onClick={() => openEditModal(aset)}
-                      className="p-2 bg-yellow-400 text-white rounded hover:bg-yellow-300 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-yellow-500
+                        text-yellow-500
+                        hover:bg-yellow-500 hover:text-white
+                        transition
+                      "
+                      title="Edit"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
+
+                    {/* DELETE */}
                     <button
                       onClick={() => handleDelete(aset.id)}
-                      className="p-2 bg-red-500 text-white rounded hover:bg-red-400 transition"
+                      className="
+                        p-2 rounded-lg
+                        border border-red-500
+                        text-red-500
+                        hover:bg-red-500 hover:text-white
+                        transition
+                      "
+                      title="Hapus"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
+
                   </td>
                 </tr>
           
@@ -215,70 +376,303 @@ export default function Asets() {
         )}
       </div>
 
-      {/* Modal Form */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative">
-            <button onClick={() => setModalOpen(false)} className="absolute top-3 right-3 p-2 hover:bg-gray-200 rounded-full">
+      {/* Modal Detail */}
+      {detailOpen && selectedAset && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div
+            className="
+              w-full max-w-lg
+              bg-[#0f172a]/60 
+              backdrop-blur-xl
+              border border-white/10
+              p-8 rounded-2xl
+              shadow-2xl
+              relative
+            "
+          >
+            {/* CLOSE */}
+            <button
+              onClick={() => setDetailOpen(false)}
+              className="
+                absolute top-3 right-3
+                p-2 rounded-full text-white
+                transition-all duration-200
+                hover:bg-red-500/30
+                active:scale-95
+              "
+            >
               <XMarkIcon className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-4">{isEdit ? "Edit Aset" : "Tambah Aset"}</h2>
-            <form onSubmit={handleSubmit} className="space-y-3 max-h-[80vh] overflow-y-auto">
-              <div className="flex flex-col">
-                <label>Kode Aset</label>
-                <input type="text" name="kode_aset" value={formData.kode_aset} onChange={handleChange} className="border px-3 py-2 rounded" required />
+
+            <h2 className="text-xl font-bold text-white mb-6">
+              Detail Aset
+            </h2>
+
+            {/* CONTENT */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-white/90">
+              
+              {/* FOTO ASET */}
+              <div className="flex items-stretch">
+                {selectedAset.foto_aset ? (
+                  <img
+                    src={`http://127.0.0.1:8000/storage/${selectedAset.foto_aset}`}
+                    alt="Foto Aset"
+                    className="
+                      w-full h-full
+                      object-cover
+                      rounded-xl
+                      border border-white/20
+                    "
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-white/10 rounded-xl">
+                    Tidak ada foto
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col">
-                <label>Nama Aset</label>
-                <input type="text" name="nama_aset" value={formData.nama_aset} onChange={handleChange} className="border px-3 py-2 rounded" required />
+
+              {/* DESKRIPSI KIRI (5 BARIS) */}
+              <div className="space-y-3">
+                <p><b>Kode Aset:</b><br />{selectedAset.kode_aset}</p>
+                <p><b>Nama Aset:</b><br />{selectedAset.nama_aset}</p>
+                <p><b>Jenis Aset:</b><br />{selectedAset.jenis_aset}</p>
+                <p><b>Kondisi:</b><br />{selectedAset.kondisi}</p>
+                <p><b>Nilai Aset:</b><br />Rp {selectedAset.nilai_aset.toLocaleString()}</p>
               </div>
-              <div className="flex flex-col">
-                <label>Jenis Aset</label>
-                <input type="text" name="jenis_aset" value={formData.jenis_aset} onChange={handleChange} className="border px-3 py-2 rounded" required />
+
+              {/* DESKRIPSI KANAN (4 BARIS) */}
+              <div className="space-y-3">
+                <p><b>Lokasi:</b><br />{selectedAset.lokasi?.nama_lokasi || "-"}</p>
+                <p><b>Status:</b><br />{selectedAset.status}</p>
+                <p><b>Status Inventaris:</b><br />{selectedAset.status_inventaris}</p>
+                <p>
+                  <b>Tanggal Masuk:</b><br />
+                  {new Date(selectedAset.tanggal_masuk).toLocaleDateString()}
+                </p>
               </div>
-              <div className="flex flex-col">
-                <label>Kondisi</label>
-                <select name="kondisi" value={formData.kondisi} onChange={handleChange} className="border px-3 py-2 rounded" required>
-                  <option>Baik</option>
-                  <option>Rusak Ringan</option>
-                  <option>Rusak Berat</option>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div
+            className="
+              w-full max-w-lg
+              bg-[#0f172a]/70
+              backdrop-blur-xl
+              border border-white/10
+              p-8 rounded-2xl
+              shadow-2xl
+              relative
+            "
+          >
+            {/* CLOSE */}
+            <button
+              onClick={() => setModalOpen(false)}
+              className="
+                absolute top-3 right-3
+                p-2 rounded-full
+                text-white
+                transition-all duration-200
+                hover:bg-red-500/30 hover:text-red-300
+                active:scale-95
+              "
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+
+            {/* TITLE */}
+            <h2 className="text-xl font-bold text-white mb-4">
+              {isEdit ? "Edit Aset" : "Tambah Aset"}
+            </h2>
+
+            {/* FORM */}
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 max-h-[75vh] overflow-y-auto pr-1"
+            >
+              {/* KODE ASET */}
+              <div>
+                <label className="text-white/80 text-sm">Kode Aset</label>
+                <input
+                  type="text"
+                  name="kode_aset"
+                  value={formData.kode_aset}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
+              </div>
+
+              {/* NAMA ASET */}
+              <div>
+                <label className="text-white/80 text-sm">Nama Aset</label>
+                <input
+                  type="text"
+                  name="nama_aset"
+                  value={formData.nama_aset}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
+              </div>
+
+              {/* JENIS ASET */}
+              <div>
+                <label className="text-white/80 text-sm">Jenis Aset</label>
+                <input
+                  type="text"
+                  name="jenis_aset"
+                  value={formData.jenis_aset}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
+              </div>
+
+              {/* KONDISI */}
+              <div>
+                <label className="text-white/80 text-sm">Kondisi</label>
+                <select
+                  name="kondisi"
+                  value={formData.kondisi}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                >
+                  <option className="text-black">Baik</option>
+                  <option className="text-black">Rusak Ringan</option>
+                  <option className="text-black">Rusak Berat</option>
                 </select>
               </div>
-              <div className="flex flex-col">
-                <label>Nilai Aset</label>
-                <input type="number" name="nilai_aset" value={formData.nilai_aset} onChange={handleChange} className="border px-3 py-2 rounded" required />
+
+              {/* NILAI ASET */}
+              <div>
+                <label className="text-white/80 text-sm">Nilai Aset</label>
+                <input
+                  type="number"
+                  name="nilai_aset"
+                  value={formData.nilai_aset}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
               </div>
-              <div className="flex flex-col">
-                <label>Lokasi ID</label>
-                <input type="number" name="lokasi_id" value={formData.lokasi_id} onChange={handleChange} className="border px-3 py-2 rounded" required />
-              </div>
-              <div className="flex flex-col">
-                <label>RFID Tag</label>
-                <input type="text" name="rfid_tag" value={formData.rfid_tag} onChange={handleChange} className="border px-3 py-2 rounded" required />
-              </div>
-              <div className="flex flex-col">
-                <label>Tanggal Masuk</label>
-                <input type="date" name="tanggal_masuk" value={formData.tanggal_masuk} onChange={handleChange} className="border px-3 py-2 rounded" required />
-              </div>
-              <div className="flex flex-col">
-                <label>Status</label>
-                <select name="status" value={formData.status} onChange={handleChange} className="border px-3 py-2 rounded" required>
-                  <option>Aktif</option>
-                  <option>Non-Aktif</option>
+
+              {/* LOKASI */}
+              <div>
+                <label className="text-white/80 text-sm">Lokasi</label>
+                <select
+                  name="lokasi_id"
+                  value={formData.lokasi_id || ""}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                >
+                  <option value="" className="text-black">
+                    -- Pilih Lokasi --
+                  </option>
+
+                  {lokasiList.map((lokasi) => (
+                    <option
+                      key={lokasi.id}
+                      value={lokasi.id}
+                      className="text-black"
+                    >
+                      {lokasi.nama_lokasi}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <div className="flex flex-col">
-                <label>Status Inventaris</label>
-                <select name="status_inventaris" value={formData.status_inventaris} onChange={handleChange} className="border px-3 py-2 rounded" required>
-                  <option>INTRA</option>
-                  <option>EXTRA</option>
+
+              {/* RFID */}
+              <div>
+                <label className="text-white/80 text-sm">RFID Tag</label>
+                <input
+                  type="text"
+                  name="rfid_tag"
+                  value={formData.rfid_tag}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
+              </div>
+
+              {/* TANGGAL MASUK */}
+              <div>
+                <label className="text-white/80 text-sm">Tanggal Masuk</label>
+                <input
+                  type="date"
+                  name="tanggal_masuk"
+                  value={formData.tanggal_masuk}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                />
+              </div>
+
+              {/* STATUS */}
+              <div>
+                <label className="text-white/80 text-sm">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                >
+                  <option className="text-black">Aktif</option>
+                  <option className="text-black">Non-Aktif</option>
                 </select>
               </div>
-              <div className="flex flex-col">
-                <label>Foto Aset</label>
-                <input type="file" name="foto_aset" onChange={handleChange} className="border px-3 py-2 rounded" />
+
+              {/* STATUS INVENTARIS */}
+              <div>
+                <label className="text-white/80 text-sm">Status Inventaris</label>
+                <select
+                  name="status_inventaris"
+                  value={formData.status_inventaris}
+                  onChange={handleChange}
+                  required
+                  className={inputGlass}
+                >
+                  <option className="text-black">INTRA</option>
+                  <option className="text-black">EXTRA</option>
+                </select>
               </div>
-              <button type="submit" className="w-full py-2 bg-gradient-to-r from-yellow-300 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg mt-3 transition">
+
+              {/* FOTO */}
+              <div>
+                <label className="text-white/80 text-sm">Foto Aset</label>
+                <input
+                  type="file"
+                  name="foto_aset"
+                  onChange={handleChange}
+                  className="
+                    w-full mt-1 text-white
+                    file:bg-blue-600 file:text-white
+                    file:px-4 file:py-2
+                    file:border-0 file:rounded-lg
+                    hover:file:bg-blue-700
+                  "
+                />
+              </div>
+
+              {/* BUTTON */}
+              <button
+                type="submit"
+                className="
+                  w-full py-2 mt-4
+                  bg-gradient-to-r from-blue-500 to-blue-700
+                  hover:from-yellow-500 hover:to-yellow-600
+                  text-white font-semibold
+                  rounded-lg
+                  transition
+                "
+              >
                 {isEdit ? "Update Aset" : "Tambah Aset"}
               </button>
             </form>

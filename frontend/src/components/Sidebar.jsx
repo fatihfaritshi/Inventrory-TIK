@@ -4,6 +4,7 @@ import {
   ArchiveBoxIcon,
   UsersIcon,
   DocumentChartBarIcon,
+  ClipboardDocumentCheckIcon
 } from "@heroicons/react/24/outline";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 
@@ -12,8 +13,9 @@ export default function Sidebar({ role }) {
     Administrator: [
       { name: "Dashboard", path: "/dashboard", icon: Squares2X2Icon },
       { name: "Kelola User", path: "/user", icon: UsersIcon },
-      { name: "Kelola Aset", path: "/aset", icon: ArchiveBoxIcon },
       { name: "Kelola Lokasi", path: "/lokasi", icon: MapPinIcon },
+      { name: "Kelola Aset", path: "/aset", icon: ArchiveBoxIcon },
+      { name: "Penilaian Aset", path: "/penilaian", icon: ClipboardDocumentCheckIcon },
       { name: "Laporan", path: "/laporan", icon: DocumentChartBarIcon },
     ],
     Petugas: [
