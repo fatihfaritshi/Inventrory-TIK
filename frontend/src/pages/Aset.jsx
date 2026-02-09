@@ -192,7 +192,7 @@ export default function Asets() {
 `;
 
   return (
-    <div className="bg-gray-100 min-h-full space-y-6">
+    <div className="space-y-6 max-w-[1400px] mx-auto">
 
       {/* ================= STAT CARD ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -242,7 +242,7 @@ export default function Asets() {
       </div>
 
       {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Daftar Aset</h1>
 
         <div className="flex gap-3">
@@ -273,38 +273,38 @@ export default function Asets() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Kode</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Jenis</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Kondisi</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Nilai</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Lokasi</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Tanggal</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Foto</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Status Inventaris</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Status</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Kode</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Nama</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Jenis</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Kondisi</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Nilai</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Lokasi</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Tanggal</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Foto</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Status Inventaris</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">Status</th>
+                <th className="sticky px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredAsets.map((aset) => (
                 <tr key={aset.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.kode_aset}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.nama_aset}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.jenis_aset}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.kondisi}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">Rp {aset.nilai_aset.toLocaleString()}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.lokasi?.nama_lokasi || "-"}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{new Date(aset.tanggal_masuk).toLocaleDateString()}</td>
-                  <td className="px-6 py-3 text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.kode_aset}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.nama_aset}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.jenis_aset}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.kondisi}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">Rp {aset.nilai_aset.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.lokasi?.nama_lokasi || "-"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{new Date(aset.tanggal_masuk).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
                     {aset.foto_aset ? (
                       <img src={`http://127.0.0.1:8000/storage/${aset.foto_aset}`} alt={aset.nama_aset} className="w-16 h-16 object-cover rounded" />
                     ) : (
                       <span className="text-gray-400">Tidak ada</span>
                     )}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{aset.status_inventaris}</td>
-                  <td className="px-6 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-700">{aset.status_inventaris}</td>
+                  <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       aset.status.toLowerCase() === "aktif"
                         ? "bg-lime-300 text-lime-900"
@@ -313,7 +313,7 @@ export default function Asets() {
                       {aset.status}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm flex gap-2 justify-center">
+                  <td className="sticky px-4 py-3 text-sm flex gap-2 justify-center">
 
                     {/* DETAIL */}
                     <button

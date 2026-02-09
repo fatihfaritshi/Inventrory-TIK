@@ -9,6 +9,21 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* hide scrollbar but keep scroll working */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE, Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari */
+}
 
 /* animation */
 @keyframes gradientMove {

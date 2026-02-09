@@ -30,13 +30,14 @@ export default function Sidebar({ role }) {
 
   return (
     <aside
-      className="
-        relative w-64 min-h-screen px-6 py-8
+      className=" fixed top-0 left-0 z-40
+        w-64 h-screen px-6 py-8
         bg-gradient-to-b from-[#020617]/100 via-[#0f172a]/90 to-[#0f172a]
         backdrop-blur-2xl
         border-r border-white/30
         shadow-[0_0_60px_rgba(37,99,235,0.15)]
         text-white
+        overflow-y-auto scrollbar-hide
       "
     >
       {/* Neon glow accent */}

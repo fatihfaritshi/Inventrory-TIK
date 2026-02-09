@@ -12,6 +12,7 @@ export default function Navbar({ user }) {
     "/user": "Kelola User",
     "/lokasi": "Kelola Lokasi",
     "/laporan": "Laporan",
+    "/penilaian": "Penilaian Aset",
   };
 
   return (
@@ -19,6 +20,8 @@ export default function Navbar({ user }) {
       {/* ================= HEADER ================= */}
       <header
         className="
+          fixed top-0 right-0 z-30
+          w-[calc(100%-16rem)]
           h-20 px-8 flex items-center justify-between
           bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900
           border-b border-blue-400 shadow-lg

@@ -6,6 +6,11 @@ import {
   PlusIcon,
   XMarkIcon,
   MapPinIcon,
+  ArchiveBoxIcon,
+  CubeIcon,
+  MinusCircleIcon,
+  XCircleIcon,
+  Squares2X2Icon
 } from "@heroicons/react/24/solid";
 
 export default function Lokasi() {
@@ -102,53 +107,59 @@ export default function Lokasi() {
   );
 
   return (
-    <div className="p-6 bg-gray-100 min-h-full space-y-6">
-      {/* ================= STAT CARD ================= */}
+    <div className="space-y-6">
+      {/* ================= STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
         {/* TOTAL LOKASI */}
-        <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Total Lokasi</p>
-            <p className="text-3xl font-bold">{lokasis.length}</p>
+        <div className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Total Lokasi</p>
+            <p className="text-4xl font-bold mt-2">{lokasis.length}</p>
           </div>
-          <MapPinIcon className="w-10 h-10 opacity-80" />
+          <MapPinIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
-        {/* LOKASI DENGAN ASET */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Lokasi Beraset</p>
-            <p className="text-3xl font-bold">
+        {/* LOKASI BERASET */}
+        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Lokasi Beraset</p>
+            <p className="text-4xl font-bold mt-2">
               {lokasis.filter((l) => (l.asets_count ?? 0) > 0).length}
             </p>
           </div>
-          <MapPinIcon className="w-10 h-10 opacity-80" />
+          <ArchiveBoxIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
         {/* TOTAL ASET */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Total Aset</p>
-            <p className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Total Aset</p>
+            <p className="text-4xl font-bold mt-2">
               {lokasis.reduce(
                 (total, l) => total + (l.asets_count ?? 0),
                 0
               )}
             </p>
           </div>
-          <MapPinIcon className="w-10 h-10 opacity-80" />
+          <CubeIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
         {/* LOKASI KOSONG */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Lokasi Kosong</p>
-            <p className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Lokasi Kosong</p>
+            <p className="text-4xl font-bold mt-2">
               {lokasis.filter((l) => (l.asets_count ?? 0) === 0).length}
             </p>
           </div>
-          <MapPinIcon className="w-10 h-10 opacity-80" />
+          <XCircleIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
+
       </div>
 
       {/* ================= HEADER ================= */}

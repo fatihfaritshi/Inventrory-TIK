@@ -14,18 +14,21 @@ export default function DashboardLayout() {
   return (
     <div className="flex min-h-screen bg-gray-100">
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed */}
       <Sidebar role={user.role} />
 
-      {/* Area kanan */}
-      <div className="flex-1 flex flex-col">
+      {/* Area kanan - dengan margin left untuk sidebar */}
+      <div className="flex-1 flex flex-col ml-64">
 
-        {/* Navbar */}
+        {/* Navbar - Fixed */}
         <Navbar user={user} />
 
-        {/* Konten halaman */}
-        <main className="flex-1 p-6">
-          <Outlet />
+        {/* Konten halaman - dengan padding konsisten */}
+        <main className="flex-1 mt-20 overflow-y-auto scrollbar-hide">
+          {/* Container dengan max-width untuk konsistensi */}
+          <div className="max-w-[1600px] mx-auto px-8 py-6">
+            <Outlet />
+          </div>
         </main>
 
       </div>

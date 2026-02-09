@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Laporan from "./pages/Laporan";
+import Penilaian from "./pages/Penilaian";
 import Lokasi from "./pages/Lokasi";
 import Aset from "./pages/Aset";
 import User from "./pages/User";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/aset" element={<Aset />} /> 
           <Route path="/lokasi" element={<Lokasi />} />
           <Route path="/laporan" element={<Laporan />} />
+          <Route path="/penilaian" element={<Penilaian />} />
         </Route>
       </Routes>
     </BrowserRouter>
