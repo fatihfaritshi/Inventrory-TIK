@@ -164,7 +164,10 @@ export default function Lokasi() {
 
       {/* ================= HEADER ================= */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar Lokasi</h1>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <MapPinIcon className="w-7 h-7 text-blue-600" />
+          Daftar Lokasi
+        </h1>
 
         <div className="flex gap-3">
           <input
@@ -172,7 +175,13 @@ export default function Lokasi() {
             placeholder="Cari nama lokasi..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring focus:ring-yellow-200"
+            className="
+              px-4 py-2
+              border border-gray-600
+              rounded-lg
+              focus:outline-none
+              focus:border-blue-600
+              focus:ring-1 focus:ring-blue-600"
           />
 
           <button
@@ -187,7 +196,7 @@ export default function Lokasi() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-900 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-700 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data lokasi...

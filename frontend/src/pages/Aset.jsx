@@ -191,6 +191,13 @@ export default function Asets() {
   focus:outline-none focus:ring-2 focus:ring-blue-400
 `;
 
+  const formatRupiah = (angka) => {
+    return new Intl.NumberFormat("id-ID", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(angka);
+  };
+
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
 
@@ -243,7 +250,10 @@ export default function Asets() {
 
       {/* ================= HEADER ================= */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar Aset</h1>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <ArchiveBoxIcon className="w-7 h-7 text-blue-600" />
+          Daftar Aset
+        </h1>
 
         <div className="flex gap-3">
           <input
@@ -251,7 +261,13 @@ export default function Asets() {
             placeholder="Cari aset..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+            className="
+              px-4 py-2
+              border border-gray-600
+              rounded-lg
+              focus:outline-none
+              focus:border-blue-600
+              focus:ring-1 focus:ring-blue-600"
           />
 
           <button
@@ -293,7 +309,7 @@ export default function Asets() {
                   <td className="px-4 py-3 text-sm text-gray-700">{aset.nama_aset}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{aset.jenis_aset}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{aset.kondisi}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">Rp {aset.nilai_aset.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">Rp {formatRupiah(aset.nilai_aset)}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{aset.lokasi?.nama_lokasi || "-"}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{new Date(aset.tanggal_masuk).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">
@@ -437,7 +453,7 @@ export default function Asets() {
                 <p><b>Nama Aset:</b><br />{selectedAset.nama_aset}</p>
                 <p><b>Jenis Aset:</b><br />{selectedAset.jenis_aset}</p>
                 <p><b>Kondisi:</b><br />{selectedAset.kondisi}</p>
-                <p><b>Nilai Aset:</b><br />Rp {selectedAset.nilai_aset.toLocaleString()}</p>
+                <p><b>Nilai Aset:</b><br />Rp {formatRupiah(selectedAset.nilai_aset)}</p>
               </div>
 
               {/* DESKRIPSI KANAN (4 BARIS) */}

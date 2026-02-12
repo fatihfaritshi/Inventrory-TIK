@@ -5,7 +5,7 @@ export default function Laporan() {
     <div className="space-y-6">
       <div className="bg-white/10 backdrop-blur-xl p-6 rounded-2xl border border-white/20">
         <h2 className="text-lg font-semibold">Total Aset</h2>
-        <p className="text-3xl font-bold mt-2">124</p>
+        <p className="text-3xl font-bold mt-2">50</p>
       </div>
 
       <div className="bg-white/10 backdrop-blur-xl p-6 rounded-2xl border border-white/20">

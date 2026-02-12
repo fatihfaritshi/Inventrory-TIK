@@ -371,10 +371,10 @@ export default function Penilaian() {
 
         {/* ================= FORM PENILAIAN ================= */}
         {showForm && (
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-2xl p-8 border-2 border-blue-200">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-2xl p-8 border-2 border-blue-700">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600" />
-                Form Penilaian Aset (Metode Fuzzy-MARCOS)
+                Form Penilaian Aset 
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -579,7 +579,7 @@ export default function Penilaian() {
                     type="submit"
                     className="flex-1 py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold text-lg rounded-xl transition shadow-xl flex items-center justify-center gap-2"
                 >
-                    <CheckCircleIcon className="w-6 h-6" />
+                    <CheckCircleIcon className="w-5 h-5" />
                     Simpan Penilaian
                 </button>
                 </div>
@@ -588,7 +588,7 @@ export default function Penilaian() {
         )}
 
         {/* ================= FILTER BAR ================= */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <div className="bg-white rounded-xl shadow-md p-6 border border-blue-700">
             <div className="flex items-center gap-2 mb-4">
             <FunnelIcon className="w-5 h-5 text-gray-600" />
             <h3 className="font-bold text-gray-800">Filter & Pencarian Data</h3>
@@ -662,10 +662,10 @@ export default function Penilaian() {
         </div>
 
         {/* ================= TABEL RANKING ================= */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-200 overflow-x-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-700 overflow-x-auto">
             <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
             <ChartBarIcon className="w-7 h-7 text-blue-600" />
-            Ranking Prioritas Pemeliharaan (Metode Fuzzy-MARCOS)
+            Ranking Prioritas Pemeliharaan 
             </h2>
 
             {loading ? (

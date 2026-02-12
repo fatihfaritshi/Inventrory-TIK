@@ -6,7 +6,10 @@ import {
   PlusIcon,
   XMarkIcon,
   UsersIcon,
+  UserGroupIcon,
+  UserIcon,
 } from "@heroicons/react/24/solid";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -150,7 +153,7 @@ export default function User() {
               {users.filter((u) => u.role === "Administrator").length}
             </p>
           </div>
-          <UsersIcon className="w-10 h-10 opacity-80" />
+          <UserIcon className="w-10 h-10 opacity-80" />
         </div>
 
         {/* PETUGAS */}
@@ -161,7 +164,7 @@ export default function User() {
               {users.filter((u) => u.role === "Petugas").length}
             </p>
           </div>
-          <UsersIcon className="w-10 h-10 opacity-80" />
+          <UserIcon className="w-10 h-10 opacity-80" />
         </div>
 
         {/* PIMPINAN */}
@@ -172,13 +175,16 @@ export default function User() {
               {users.filter((u) => u.role === "Pimpinan").length}
             </p>
           </div>
-          <UsersIcon className="w-10 h-10 opacity-80" />
+          <UserIcon className="w-10 h-10 opacity-80" />
         </div>
       </div>
 
       {/* ================= HEADER ================= */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar User</h1>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <UsersIcon className="w-7 h-7 text-blue-600" />
+          Daftar User
+        </h1>
 
         <div className="flex gap-3">
           <input
@@ -186,7 +192,13 @@ export default function User() {
             placeholder="Cari username / role..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+            className="
+              px-4 py-2
+              border border-gray-600
+              rounded-lg
+              focus:outline-none
+              focus:border-blue-600
+              focus:ring-1 focus:ring-blue-600"
           />
 
           <button
@@ -201,7 +213,7 @@ export default function User() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-800 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-700 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data user...
