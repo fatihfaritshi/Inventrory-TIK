@@ -356,8 +356,16 @@ export default function Asets() {
                         <span className="text-gray-400">Tidak ada</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
-                      {aset.status_inventaris}
+                    <td className="px-4 py-3 text-sm text-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          aset.status_inventaris === "INTRA"
+                            ? "bg-purple-300 text-purple-900"
+                            : "bg-orange-300 text-orange-900"
+                        }`}
+                      >
+                        {aset.status_inventaris}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span
@@ -486,12 +494,28 @@ export default function Asets() {
                 <p>
                   <b>Status:</b>
                   <br />
-                  {selectedAset.status}
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      selectedAset.status === "Aktif"
+                        ? "bg-lime-300 text-lime-900"
+                        : "bg-red-300 text-red-900"
+                    }`}
+                  >
+                    {selectedAset.status}
+                  </span>
                 </p>
                 <p>
                   <b>Status Inventaris:</b>
                   <br />
-                  {selectedAset.status_inventaris}
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      selectedAset.status_inventaris === "INTRA"
+                        ? "bg-purple-300 text-purple-900"
+                        : "bg-orange-300 text-orange-900"
+                    }`}
+                  >
+                    {selectedAset.status_inventaris}
+                  </span>
                 </p>
                 <p>
                   <b>Tanggal Masuk:</b>
