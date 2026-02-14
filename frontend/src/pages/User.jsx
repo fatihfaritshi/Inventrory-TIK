@@ -7,9 +7,11 @@ import {
   XMarkIcon,
   UsersIcon,
   UserGroupIcon,
-  UserIcon,
+  CommandLineIcon,
+  BriefcaseIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/solid";
-import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -110,7 +112,6 @@ export default function User() {
       })
       .catch((err) => console.error(err));
   };
-  
 
   // 🔍 SEARCH FILTER
   const filteredUsers = users.filter(
@@ -134,48 +135,53 @@ export default function User() {
 
   return (
     <div className="space-y-6">
-      {/* ================= STAT CARD ================= */}
+      {/* ================= STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
         {/* TOTAL USER */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Total User</p>
-            <p className="text-3xl font-bold">{users.length}</p>
+        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Total User</p>
+            <p className="text-4xl font-bold mt-2">{users.length}</p>
           </div>
-          <UsersIcon className="w-10 h-10 opacity-80" />
+          <UserGroupIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
         {/* ADMINISTRATOR */}
-        <div className="bg-gradient-to-r from-lime-500 to-lime-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Administrator</p>
-            <p className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Administrator</p>
+            <p className="text-4xl font-bold mt-2">
               {users.filter((u) => u.role === "Administrator").length}
             </p>
           </div>
-          <UserIcon className="w-10 h-10 opacity-80" />
+          <ShieldCheckIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
         {/* PETUGAS */}
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Petugas</p>
-            <p className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Petugas</p>
+            <p className="text-4xl font-bold mt-2">
               {users.filter((u) => u.role === "Petugas").length}
             </p>
           </div>
-          <UserIcon className="w-10 h-10 opacity-80" />
+          <ClipboardDocumentListIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
 
         {/* PIMPINAN */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-2xl shadow-lg p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90">Pimpinan</p>
-            <p className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-sm opacity-90 font-medium">Pimpinan</p>
+            <p className="text-4xl font-bold mt-2">
               {users.filter((u) => u.role === "Pimpinan").length}
             </p>
           </div>
-          <UserIcon className="w-10 h-10 opacity-80" />
+          <BriefcaseIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
       </div>
 
@@ -204,7 +210,7 @@ export default function User() {
           <button
             onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-              hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow transition"
+              hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow transition whitespace-nowrap"
           >
             <PlusIcon className="w-5 h-5" />
             Tambah User
@@ -213,7 +219,7 @@ export default function User() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-700 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-900 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data user...
@@ -226,7 +232,7 @@ export default function User() {
                   Username
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                  Nama 
+                  Nama
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
                   Role
@@ -246,34 +252,32 @@ export default function User() {
                     {user.nama}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-700">
-                    {user.role}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        user.role === "Administrator"
+                          ? "bg-purple-100 text-purple-800"
+                          : user.role === "Petugas"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
                   </td>
                   <td className="px-6 py-3 text-sm flex justify-center gap-2">
                     {/* EDIT */}
                     <button
                       onClick={() => openEditModal(user)}
-                      className="
-                        p-2 rounded-lg
-                        border border-yellow-500
-                        text-yellow-500
-                        hover:bg-yellow-500 hover:text-white
-                        transition
-                        "
+                      className="p-2 rounded-lg border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white transition"
                       title="Edit"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
-                    
+
                     {/* DELETE */}
                     <button
                       onClick={() => handleDelete(user.id)}
-                      className="
-                        p-2 rounded-lg
-                        border border-red-500
-                        text-red-500
-                        hover:bg-red-500 hover:text-white
-                        transition
-                        "
+                      className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
                       title="Hapus"
                     >
                       <TrashIcon className="w-4 h-4" />
@@ -284,7 +288,10 @@ export default function User() {
 
               {filteredUsers.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     Data user tidak ditemukan
                   </td>
                 </tr>
@@ -297,24 +304,10 @@ export default function User() {
       {/* ================= MODAL ================= */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="
-            w-full max-w-md
-            bg-[#0f172a]/70 backdrop-blur-xl
-            border border-white/30
-            p-8 rounded-2xl
-            shadow-2xl
-            relative
-          ">
+          <div className="w-full max-w-md bg-[#0f172a]/70 backdrop-blur-xl border border-white/30 p-8 rounded-2xl shadow-2xl relative">
             <button
               onClick={() => setModalOpen(false)}
-              className="
-                absolute top-3 right-3
-                p-2 rounded-full
-                text-white
-                transition-all duration-200
-                hover:bg-red-500/30 hover:text-red-300
-                active:scale-95
-              "
+              className="absolute top-3 right-3 p-2 rounded-full text-white transition-all duration-200 hover:bg-red-500/30 hover:text-red-300 active:scale-95"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -324,7 +317,6 @@ export default function User() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-
               <div>
                 <label className="text-white/80 text-sm">Nama</label>
                 <input
@@ -384,8 +376,7 @@ export default function User() {
 
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-700
-              hover:from-yellow-500 hover:to-yellow-600 text-white rounded-lg mt-4"
+                className="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white rounded-lg mt-4 transition"
               >
                 {isEdit ? "Update User" : "Tambah User"}
               </button>
