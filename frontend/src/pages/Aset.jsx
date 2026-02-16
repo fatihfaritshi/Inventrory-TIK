@@ -424,6 +424,24 @@ export default function Asets() {
             </table>
           </div>
         )}
+
+        {/* TABLE FOOTER */}
+        {filteredAsets.length > 0 && (
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Menampilkan{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredAsets.length}
+              </span>{" "}
+              dari{" "}
+              <span className="font-semibold text-gray-900">
+                {asets.length}
+              </span>{" "}
+              aset
+            </p>
+          </div>
+        )}
+
       </div>
 
       {/* ================= MODAL DETAIL ================= */}

@@ -8,9 +8,8 @@ import {
   MapPinIcon,
   ArchiveBoxIcon,
   CubeIcon,
-  MinusCircleIcon,
   XCircleIcon,
-  Squares2X2Icon
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 
 export default function Lokasi() {
@@ -44,7 +43,8 @@ export default function Lokasi() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus lokasi ini?")) return;
+    if (!window.confirm("Apakah Anda yakin ingin menghapus lokasi ini?"))
+      return;
 
     fetch(`http://127.0.0.1:8000/api/lokasis/${id}`, { method: "DELETE" })
       .then((res) => res.json())
@@ -110,7 +110,6 @@ export default function Lokasi() {
     <div className="space-y-6">
       {/* ================= STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
         {/* TOTAL LOKASI */}
         <div className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
@@ -139,10 +138,7 @@ export default function Lokasi() {
           <div className="relative z-10">
             <p className="text-sm opacity-90 font-medium">Total Aset</p>
             <p className="text-4xl font-bold mt-2">
-              {lokasis.reduce(
-                (total, l) => total + (l.asets_count ?? 0),
-                0
-              )}
+              {lokasis.reduce((total, l) => total + (l.asets_count ?? 0), 0)}
             </p>
           </div>
           <CubeIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
@@ -159,148 +155,163 @@ export default function Lokasi() {
           </div>
           <XCircleIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
         </div>
-
       </div>
 
-      {/* ================= HEADER ================= */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <MapPinIcon className="w-7 h-7 text-blue-600" />
-          Daftar Lokasi
-        </h1>
+      {/* ================= HEADER (Terpisah) ================= */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <MapPinIcon className="w-7 h-7 text-blue-600" />
+              Daftar Lokasi
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Kelola dan pantau lokasi penyimpanan aset
+            </p>
+          </div>
 
-        <div className="flex gap-3">
-          <input
-            type="text"
-            placeholder="Cari nama lokasi..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="
-              px-4 py-2
-              border border-gray-600
-              rounded-lg
-              focus:outline-none
-              focus:border-blue-600
-              focus:ring-1 focus:ring-blue-600"
-          />
+          <div className="flex gap-3">
+            {/* Search Bar */}
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari lokasi..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition w-64"
+              />
+            </div>
 
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-              hover:from-yellow-500 hover:to-yellow-600 font-semibold text-white rounded-lg shadow transition"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Tambah Lokasi
-          </button>
+            {/* Add Button */}
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
+                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
+                hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+            >
+              <PlusIcon className="w-5 h-5" />
+              Tambah Lokasi
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-700 overflow-x-auto">
+      <div className="bg-white rounded-2xl p-6 shadow-2xl border border-blue-600 overflow-hidden">
         {loading ? (
-          <div className="text-center py-10 text-gray-600">
-            Loading data lokasi...
+          <div className="text-center py-10">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-gray-600 font-medium">Loading data lokasi...</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                  Nama Lokasi
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                  Deskripsi
-                </th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
-                  Jumlah Aset
-                </th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredLokasis.map((lokasi) => (
-                <tr key={lokasi.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-3 text-sm text-gray-700">
-                    {lokasi.nama_lokasi}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-gray-700">
-                    {lokasi.deskripsi || "-"}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-center font-semibold">
-                    {lokasi.asets_count ?? 0}
-                  </td>
-                  <td className="px-6 py-3 text-sm flex justify-center gap-2">
-                    {/* EDIT */}
-                    <button
-                      onClick={() => openEditModal(lokasi)}
-                      className="
-                        p-2 rounded-lg
-                        border border-yellow-500
-                        text-yellow-500
-                        hover:bg-yellow-500 hover:text-white
-                        transition
-                        "
-                      title="Edit"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </button>
-                                        
-                    {/* DELETE */}
-                    <button
-                      onClick={() => handleDelete(lokasi.id)}
-                      className="
-                        p-2 rounded-lg
-                        border border-red-500
-                        text-red-500
-                        hover:bg-red-500 hover:text-white
-                        transition
-                        "
-                      title="Hapus"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              {/* TABLE HEAD */}
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Nama Lokasi
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Deskripsi
+                  </th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
+                    Jumlah Aset
+                  </th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
+              </thead>
 
-              {filteredLokasis.length === 0 && !loading && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                    Data lokasi tidak ditemukan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              {/* TABLE BODY */}
+              <tbody className="divide-y divide-gray-200">
+                {filteredLokasis.map((lokasi) => (
+                  <tr key={lokasi.id} className="hover:bg-gray-50 transition">
+                    {/* NAMA LOKASI */}
+                    <td className="px-6 py-3 text-sm text-gray-700 font-medium">
+                      {lokasi.nama_lokasi}
+                    </td>
+
+                    {/* DESKRIPSI */}
+                    <td className="px-6 py-3 text-sm text-gray-700">
+                      {lokasi.deskripsi || "-"}
+                    </td>
+
+                    {/* JUMLAH ASET */}
+                    <td className="px-6 py-3 text-sm text-center font-semibold">
+                      {lokasi.asets_count ?? 0}
+                    </td>
+
+                    {/* AKSI */}
+                    <td className="px-6 py-3 text-sm flex justify-center gap-2">
+                      {/* EDIT */}
+                      <button
+                        onClick={() => openEditModal(lokasi)}
+                        className="p-2 rounded-lg border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white transition"
+                        title="Edit"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        onClick={() => handleDelete(lokasi.id)}
+                        className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
+                        title="Hapus"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* EMPTY STATE */}
+                {filteredLokasis.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-16 text-center">
+                      <MapPinIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                      <p className="text-gray-500 font-medium">
+                        Belum ada data lokasi
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Tambahkan lokasi baru untuk memulai
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TABLE FOOTER */}
+        {filteredLokasis.length > 0 && (
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Menampilkan{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredLokasis.length}
+              </span>{" "}
+              dari{" "}
+              <span className="font-semibold text-gray-900">
+                {lokasis.length}
+              </span>{" "}
+              lokasi
+            </p>
+          </div>
         )}
       </div>
 
-      {/* ================= MODAL ================= */}
+      {/* ================= MODAL (Tidak Diubah) ================= */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div
-            className="
-              w-full max-w-md
-              bg-[#0f172a]/70 backdrop-blur-xl
-              border border-white/30
-              p-8 rounded-2xl
-              shadow-2xl
-              relative
-            "
-          >
+          <div className="w-full max-w-md bg-[#0f172a]/70 backdrop-blur-xl border border-white/30 p-8 rounded-2xl shadow-2xl relative">
             {/* CLOSE */}
             <button
               onClick={() => setModalOpen(false)}
-              className="
-                absolute top-3 right-3
-                p-2 rounded-full
-                text-white
-                transition-all duration-200
-                hover:bg-red-500/30 hover:text-red-300
-                active:scale-95
-              "
+              className="absolute top-3 right-3 p-2 rounded-full text-white transition-all duration-200 hover:bg-red-500/30 hover:text-red-300 active:scale-95"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -312,7 +323,6 @@ export default function Lokasi() {
 
             {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-4">
-
               {/* NAMA LOKASI */}
               <div>
                 <label className="text-white/80 text-sm">Nama Lokasi</label>
@@ -322,13 +332,7 @@ export default function Lokasi() {
                   value={formData.nama_lokasi}
                   onChange={handleChange}
                   required
-                  className="
-                    w-full mt-1 px-3 py-2 rounded-lg
-                    bg-white/10 text-white
-                    border border-white/20
-                    placeholder-white/40
-                    focus:outline-none focus:ring-2 focus:ring-blue-400
-                  "
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -340,27 +344,14 @@ export default function Lokasi() {
                   value={formData.deskripsi}
                   onChange={handleChange}
                   rows={3}
-                  className="
-                    w-full mt-1 px-3 py-2 rounded-lg
-                    bg-white/10 text-white
-                    border border-white/20
-                    placeholder-white/40
-                    focus:outline-none focus:ring-2 focus:ring-blue-400
-                  "
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
               {/* BUTTON */}
               <button
                 type="submit"
-                className="
-                  w-full py-2 mt-4
-                  bg-gradient-to-r from-blue-500 to-blue-700
-                  hover:from-yellow-500 hover:to-yellow-600
-                  text-white font-semibold
-                  rounded-lg
-                  transition
-                "
+                className="w-full py-2 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg transition"
               >
                 {isEdit ? "Update Lokasi" : "Tambah Lokasi"}
               </button>

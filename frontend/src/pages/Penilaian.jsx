@@ -807,6 +807,23 @@ export default function Penilaian() {
                 </tbody>
             </table>
             )}
+
+            {/* TABLE FOOTER */}
+            {filteredPenilaians.length > 0 && (
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                Menampilkan{" "}
+                <span className="font-semibold text-gray-900">
+                    {filteredPenilaians.length}
+                </span>{" "}
+                dari{" "}
+                <span className="font-semibold text-gray-900">
+                    {penilaians.length}
+                </span>{" "}
+                penilaian
+                </p>
+            </div>
+            )}
         </div>
 
         {/* ================= MODAL DETAIL ================= */}

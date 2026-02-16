@@ -299,6 +299,23 @@ export default function User() {
             </tbody>
           </table>
         )}
+
+        {/* TABLE FOOTER */}
+        {filteredUsers.length > 0 && (
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Menampilkan{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredUsers.length}
+              </span>{" "}
+              dari{" "}
+              <span className="font-semibold text-gray-900">
+                {users.length}
+              </span>{" "}
+              user
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ================= MODAL ================= */}
