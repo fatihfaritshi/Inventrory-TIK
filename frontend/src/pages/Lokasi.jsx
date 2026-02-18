@@ -157,7 +157,7 @@ export default function Lokasi() {
         </div>
       </div>
 
-      {/* ================= HEADER (Terpisah) ================= */}
+      {/* ================= HEADER ================= */}
       <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
@@ -179,7 +179,7 @@ export default function Lokasi() {
                 placeholder="Cari lokasi..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition w-64"
+                className="pl-10 pr-4 py-2 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition w-64"
               />
             </div>
 
@@ -187,7 +187,7 @@ export default function Lokasi() {
             <button
               onClick={openCreateModal}
               className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
+                hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />

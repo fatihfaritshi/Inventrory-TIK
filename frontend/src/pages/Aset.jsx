@@ -6,6 +6,7 @@ import {
   XCircleIcon,
   Squares2X2Icon,
   PencilIcon,
+  MagnifyingGlassIcon,
   TrashIcon,
   PlusIcon,
   XMarkIcon,
@@ -249,29 +250,42 @@ export default function Asets() {
       </div>
 
       {/* ================= HEADER ================= */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <ArchiveBoxIcon className="w-7 h-7 text-blue-600" />
-          Daftar Aset
-        </h1>
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <ArchiveBoxIcon className="w-7 h-7 text-blue-600" />
+              Daftar Aset
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Kelola dan pantau data aset
+            </p>
+          </div>
 
-        <div className="flex gap-3">
-          <input
-            type="text"
-            placeholder="Cari aset..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
-          />
+          <div className="flex gap-3">
+            {/* Search Bar */}
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari aset..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition w-64"
+              />
+            </div>
 
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-              hover:from-yellow-500 hover:to-yellow-600 font-semibold text-white rounded-lg shadow transition whitespace-nowrap"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Tambah Aset
-          </button>
+            {/* Add Button */}
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
+                hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-lg 
+                hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+            >
+              <PlusIcon className="w-5 h-5" />
+              Tambah Aset
+            </button>
+          </div>
         </div>
       </div>
 
