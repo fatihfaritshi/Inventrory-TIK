@@ -66,7 +66,7 @@ return new class extends Migration {
                 'Tidak Urgen'
             ]);
 
-            $table->integer('total_nilai');
+            $table->double('total_nilai', 8, 2)->default(0);
 
             $table->timestamps();
         });

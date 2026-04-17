@@ -9,6 +9,7 @@ class Penilaian extends Model
 {
     use HasFactory;
 
+    // ✅ Set primary key custom
     protected $primaryKey = 'penilaian_id';
 
     protected $fillable = [
@@ -23,12 +24,19 @@ class Penilaian extends Model
         'total_nilai'
     ];
 
+    // ✅ Cast total_nilai sebagai double
+    protected $casts = [
+        'total_nilai' => 'double',
+        'aset_id' => 'integer',
+        'user_id' => 'integer',
+    ];
+
     /**
      * Relasi ke Aset
      */
     public function aset()
     {
-        return $this->belongsTo(Aset::class, 'aset_id');
+        return $this->belongsTo(Aset::class, 'aset_id', 'id');
     }
 
     /**
@@ -36,6 +44,6 @@ class Penilaian extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

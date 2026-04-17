@@ -7,6 +7,7 @@ import Penilaian from "./pages/Penilaian";
 import Lokasi from "./pages/Lokasi";
 import Aset from "./pages/Aset";
 import User from "./pages/User";
+import Pemeliharaan from "./pages/Pemeliharaan";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user")) || { role: "Administrator" };
@@ -24,6 +25,7 @@ function App() {
           <Route path="/aset" element={<Aset />} /> 
           <Route path="/lokasi" element={<Lokasi />} />
           <Route path="/laporan" element={<Laporan />} />
+          <Route path="/pemeliharaan" element={<Pemeliharaan />} />
           <Route path="/penilaian" element={<Penilaian />} />
         </Route>
       </Routes>

@@ -10,7 +10,6 @@ class Pemeliharaan extends Model
     use HasFactory;
 
     protected $table = 'pemeliharaans';
-
     protected $primaryKey = 'pemeliharaan_id';
 
     protected $fillable = [
@@ -21,9 +20,17 @@ class Pemeliharaan extends Model
         'tanggal_selesai',
     ];
 
-    // Relasi: banyak pemeliharaan milik satu aset
+    protected $casts = [
+        'tanggal' => 'date',
+        'tanggal_selesai' => 'date',
+        'biaya' => 'decimal:2',
+    ];
+
+    /**
+     * Relasi: banyak pemeliharaan milik satu aset
+     */
     public function aset()
     {
-        return $this->belongsTo(Aset::class, 'aset_id');
+        return $this->belongsTo(Aset::class, 'aset_id', 'id');
     }
 }

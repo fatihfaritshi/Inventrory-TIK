@@ -1,8 +1,8 @@
-import { UserCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { UserCircleIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 
-export default function Navbar({ user }) {
+export default function Navbar({ user, onToggleSidebar }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -13,6 +13,7 @@ export default function Navbar({ user }) {
     "/lokasi": "Kelola Lokasi",
     "/laporan": "Laporan",
     "/penilaian": "Penilaian Aset",
+    "/pemeliharaan": "Pemeliharaan Aset",
   };
 
   return (
@@ -21,35 +22,45 @@ export default function Navbar({ user }) {
       <header
         className="
           fixed top-0 right-0 z-30
-          w-[calc(100%-16rem)]
-          h-20 px-8 flex items-center justify-between
+          w-full md:w-[calc(100%-16rem)]
+          h-16 md:h-20 px-4 md:px-8 flex items-center justify-between
           bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900
           border-b border-blue-400 shadow-lg
         "
       >
         {/* KIRI */}
-        <div>
-          <h1 className="text-2xl font-extrabold text-white">
-            Sistem Inventaris Aset
-          </h1>
-          <p className="text-sm text-blue-200">
-            {pageTitles[location.pathname] || ""}
-          </p>
+        <div className="flex items-center gap-3">
+          {/* Hamburger menu (mobile only) */}
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 rounded-lg hover:bg-white/10 transition md:hidden"
+          >
+            <Bars3Icon className="w-6 h-6 text-white" />
+          </button>
+
+          <div>
+            <h1 className="text-lg md:text-2xl font-extrabold text-white">
+              Sistem Inventaris Aset
+            </h1>
+            <p className="text-xs md:text-sm text-blue-200 hidden sm:block">
+              {pageTitles[location.pathname] || ""}
+            </p>
+          </div>
         </div>
 
         {/* KANAN */}
         <div
           onClick={() => setOpen(true)}
           className="
-            cursor-pointer flex items-center gap-3
-            px-4 py-2 rounded-xl
+            cursor-pointer flex items-center gap-2 md:gap-3
+            px-3 md:px-4 py-1.5 md:py-2 rounded-xl
             bg-white/10 hover:bg-white/20
             border border-white/20
             transition
           "
         >
-          <UserCircleIcon className="w-10 h-10 text-white" />
-          <div className="text-right leading-tight">
+          <UserCircleIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          <div className="text-right leading-tight hidden sm:block">
             <p className="text-sm font-semibold text-white">
               {user.username}
             </p>
@@ -131,10 +142,10 @@ function UserProfileModal({ user, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div
         className="
-          relative w-full max-w-md p-8 rounded-2xl
+          relative w-full max-w-md p-6 md:p-8 rounded-2xl
           backdrop-blur-2xl
           border border-white/30
           shadow-[0_0_80px_rgba(59,130,246,0.25)]
@@ -179,19 +190,19 @@ function UserProfileModal({ user, onClose }) {
         >
           <div>
             <p className="text-white/60 text-xs">Nama</p>
-            <p className="font-semibold">{user.nama}</p>
+            <p className="font-semibold text-sm">{user.nama}</p>
           </div>
           <div>
             <p className="text-white/60 text-xs">Username</p>
-            <p className="font-semibold">{user.username}</p>
+            <p className="font-semibold text-sm">{user.username}</p>
           </div>
           <div>
             <p className="text-white/60 text-xs">Role</p>
-            <p className="font-semibold">{user.role}</p>
+            <p className="font-semibold text-sm">{user.role}</p>
           </div>
           <div>
             <p className="text-white/60 text-xs">Dibuat</p>
-            <p className="font-semibold">
+            <p className="font-semibold text-sm">
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString("id-ID", {
                     day: "2-digit",
