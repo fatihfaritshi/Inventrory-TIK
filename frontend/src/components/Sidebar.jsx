@@ -24,9 +24,11 @@ export default function Sidebar({ role, isOpen, onClose }) {
     Petugas: [
       { name: "Dashboard", path: "/dashboard", icon: Squares2X2Icon },
       { name: "Data Aset", path: "/aset", icon: ArchiveBoxIcon },
+      { name: "Penilaian Aset", path: "/penilaian", icon: ClipboardDocumentCheckIcon },
     ],
     Pimpinan: [
       { name: "Dashboard", path: "/dashboard", icon: Squares2X2Icon },
+      { name: "Pemeliharaan", path: "/pemeliharaan", icon: WrenchScrewdriverIcon },
       { name: "Laporan", path: "/laporan", icon: DocumentChartBarIcon },
     ],
   };

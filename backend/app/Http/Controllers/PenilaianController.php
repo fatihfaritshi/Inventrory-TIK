@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Penilaian;
+use App\Models\Pemeliharaan;
 use App\Services\FuzzyMarcosService;
 use Illuminate\Http\Request;
 

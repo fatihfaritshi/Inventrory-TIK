@@ -34,11 +34,15 @@ class PemeliharaanController extends Controller
         $subQuery = Penilaian::select('aset_id', DB::raw('MAX(total_nilai) as max_nilai'))
             ->groupBy('aset_id');
 
+        // Ambil aset_id yang sudah memiliki pemeliharaan
+        $maintainedAsetIds = Pemeliharaan::pluck('aset_id')->unique()->toArray();
+
         $penilaians = Penilaian::with(['aset.lokasi', 'user'])
             ->joinSub($subQuery, 'latest', function ($join) {
                 $join->on('penilaians.aset_id', '=', 'latest.aset_id')
                     ->on('penilaians.total_nilai', '=', 'latest.max_nilai');
             })
+            ->whereNotIn('penilaians.aset_id', $maintainedAsetIds)
             ->select('penilaians.*') 
             ->orderByDesc('penilaians.total_nilai')
             ->get();

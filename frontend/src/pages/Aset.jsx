@@ -364,10 +364,15 @@ export default function Asets() {
                         <img
                           src={`http://127.0.0.1:8000/storage/${aset.foto_aset}`}
                           alt={aset.nama_aset}
-                          className="w-16 h-16 object-cover rounded"
+                          className="w-16 h-16 object-cover rounded shadow-md border border-gray-200 cursor-pointer hover:scale-110 transition-transform"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<span class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded text-gray-400 text-xs">No Image</span>';
+                          }}
                         />
                       ) : (
-                        <span className="text-gray-400">Tidak ada</span>
+                        <span className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded text-gray-400 text-xs">No Image</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm text-center">
@@ -479,6 +484,11 @@ export default function Asets() {
                     src={`http://127.0.0.1:8000/storage/${selectedAset.foto_aset}`}
                     alt="Foto Aset"
                     className="w-full h-full object-cover rounded-xl border border-white/20"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white/10 rounded-xl text-white/60 text-sm">Foto tidak tersedia</div>';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-white/10 rounded-xl">
