@@ -436,6 +436,7 @@ export default function Penilaian() {
                                                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Total Nilai</th>
                                                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Prioritas</th>
                                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Penilai</th>
+                                                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-gray-100 bg-white">
@@ -449,6 +450,12 @@ export default function Penilaian() {
                                                                     <td className="px-4 py-3 text-center"><span className="text-lg font-bold text-gray-800">{item.total_nilai}</span></td>
                                                                     <td className="px-4 py-3 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm ${prioritas.color}`}>{prioritas.label}</span></td>
                                                                     <td className="px-4 py-3 text-sm text-gray-700">{item.user?.username || "-"}</td>
+                                                                    <td className="px-4 py-3 text-sm">
+                                                                        <div className="flex gap-2 justify-center">
+                                                                            <button onClick={() => openDetailModal(item)} className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition shadow-md" title="Lihat Detail"><EyeIcon className="w-4 h-4" /></button>
+                                                                            <button onClick={() => handleDelete(item.penilaian_id)} className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition shadow-md" title="Hapus"><TrashIcon className="w-4 h-4" /></button>
+                                                                        </div>
+                                                                    </td>
                                                                 </tr>
                                                             );
                                                         })}

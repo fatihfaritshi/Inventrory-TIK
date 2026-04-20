@@ -14,6 +14,7 @@ class Pemeliharaan extends Model
 
     protected $fillable = [
         'aset_id',
+        'user_id',
         'tanggal',
         'deskripsi',
         'biaya',
@@ -32,5 +33,13 @@ class Pemeliharaan extends Model
     public function aset()
     {
         return $this->belongsTo(Aset::class, 'aset_id', 'id');
+    }
+
+    /**
+     * Relasi: pemeliharaan diinput oleh satu user
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

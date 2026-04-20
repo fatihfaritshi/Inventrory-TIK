@@ -15,7 +15,7 @@ class PemeliharaanController extends Controller
      */
     public function index()
     {
-        $data = Pemeliharaan::with(['aset.lokasi'])
+        $data = Pemeliharaan::with(['aset.lokasi', 'user'])
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -113,8 +113,18 @@ class PemeliharaanController extends Controller
             ->whereYear('tanggal', date('Y'))
             ->count();
         
-        $selesai = Pemeliharaan::whereNotNull('tanggal_selesai')->count();
-        $berlangsung = Pemeliharaan::whereNull('tanggal_selesai')->count();
+        $today = now()->toDateString();
+        
+        // Berlangsung = tanggal_selesai IS NULL ATAU tanggal_selesai > hari ini
+        $berlangsung = Pemeliharaan::where(function ($query) use ($today) {
+            $query->whereNull('tanggal_selesai')
+                  ->orWhere('tanggal_selesai', '>', $today);
+        })->count();
+        
+        // Selesai = tanggal_selesai IS NOT NULL DAN tanggal_selesai <= hari ini
+        $selesai = Pemeliharaan::whereNotNull('tanggal_selesai')
+            ->where('tanggal_selesai', '<=', $today)
+            ->count();
         
         $totalBiaya = Pemeliharaan::sum('biaya');
         $biayaBulanIni = Pemeliharaan::whereMonth('tanggal', date('m'))
@@ -138,14 +148,22 @@ class PemeliharaanController extends Controller
     {
         $request->validate([
             'aset_id' => 'required|exists:asets,id',
+            'user_id' => 'nullable|exists:users,id',
             'tanggal' => 'required|date',
             'deskripsi' => 'required|string',
             'biaya' => 'required|numeric|min:0',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal',
         ]);
 
-        $pemeliharaan = Pemeliharaan::create($request->all());
-        $pemeliharaan->load('aset');
+        $data = $request->all();
+        
+        // Jika user_id tidak dikirim dari request, ambil dari auth
+        if (!isset($data['user_id']) && $request->user()) {
+            $data['user_id'] = $request->user()->id;
+        }
+
+        $pemeliharaan = Pemeliharaan::create($data);
+        $pemeliharaan->load(['aset', 'user']);
 
         return response()->json([
             'message' => 'Data pemeliharaan berhasil ditambahkan',
@@ -158,7 +176,7 @@ class PemeliharaanController extends Controller
      */
     public function show($id)
     {
-        $data = Pemeliharaan::with(['aset.lokasi'])->find($id);
+        $data = Pemeliharaan::with(['aset.lokasi', 'user'])->find($id);
 
         if (!$data) {
             return response()->json([

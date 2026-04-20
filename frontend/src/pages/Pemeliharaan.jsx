@@ -85,7 +85,7 @@ export default function Pemeliharaan() {
         if (!item.tanggal_selesai) return "Berlangsung";
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const tglSelesai = new Date(item.tanggal_selesai); tglSelesai.setHours(0, 0, 0, 0);
-        return today >= tglSelesai ? "Selesai" : "Berlangsung";
+        return tglSelesai > today ? "Berlangsung" : "Selesai";
     };
 
     // ==================== TIMELINE GROUPING ====================
@@ -127,8 +127,10 @@ export default function Pemeliharaan() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const user = JSON.parse(localStorage.getItem("user")) || {};
+            const payload = { ...formData, user_id: user.id || null };
             const res = await fetch("http://127.0.0.1:8000/api/pemeliharaans", {
-                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData),
+                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
             });
             const result = await res.json();
             if (!res.ok) { alert(result.message || "Gagal menyimpan data"); return; }
@@ -426,7 +428,9 @@ export default function Pemeliharaan() {
                                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Deskripsi</th>
                                                             <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase">Biaya</th>
                                                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Tgl Selesai</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Diinput Oleh</th>
                                                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Status</th>
+                                                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-gray-100 bg-white">
@@ -440,12 +444,23 @@ export default function Pemeliharaan() {
                                                                     <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{item.deskripsi}</td>
                                                                     <td className="px-4 py-3 text-sm text-right font-semibold text-gray-800">{formatRupiah(item.biaya)}</td>
                                                                     <td className="px-4 py-3 text-center text-sm text-gray-700">{item.tanggal_selesai ? new Date(item.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
+                                                                    <td className="px-4 py-3 text-sm text-gray-700">{item.user?.username || item.user?.nama || "-"}</td>
                                                                     <td className="px-4 py-3 text-center">
                                                                         {status === "Selesai" ? (
                                                                             <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-green-500">Selesai</span>
                                                                         ) : (
                                                                             <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-yellow-500">Berlangsung</span>
                                                                         )}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-center">
+                                                                        <div className="flex items-center justify-center gap-2">
+                                                                            <button onClick={() => { setSelectedItem(item); setDetailOpen(true); }} className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition" title="Detail">
+                                                                                <EyeIcon className="w-4 h-4" />
+                                                                            </button>
+                                                                            <button onClick={() => handleDelete(item.pemeliharaan_id)} className="p-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition" title="Hapus">
+                                                                                <TrashIcon className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                             );
@@ -478,7 +493,10 @@ export default function Pemeliharaan() {
                                 <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Tanggal Selesai</p><p className="font-bold text-gray-800">{selectedItem.tanggal_selesai ? new Date(selectedItem.tanggal_selesai).toLocaleDateString("id-ID") : "Belum selesai"}</p></div>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Deskripsi</p><p className="text-gray-800">{selectedItem.deskripsi}</p></div>
-                            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200"><p className="text-xs text-blue-600 mb-1 font-semibold">Total Biaya</p><p className="text-2xl font-bold text-blue-700">{formatRupiah(selectedItem.biaya)}</p></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200"><p className="text-xs text-blue-600 mb-1 font-semibold">Total Biaya</p><p className="text-2xl font-bold text-blue-700">{formatRupiah(selectedItem.biaya)}</p></div>
+                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Diinput Oleh</p><p className="font-bold text-gray-800">{selectedItem.user?.username || selectedItem.user?.nama || "-"}</p></div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -15,7 +15,7 @@ import {
     PrinterIcon,
 } from "@heroicons/react/24/solid";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 // ==================== TAB CONFIGURATION ====================
@@ -108,7 +108,7 @@ export default function Laporan() {
         today.setHours(0, 0, 0, 0);
         const tglSelesai = new Date(item.tanggal_selesai);
         tglSelesai.setHours(0, 0, 0, 0);
-        return today >= tglSelesai ? "Selesai" : "Berlangsung";
+        return tglSelesai > today ? "Berlangsung" : "Selesai";
     };
 
     // ==================== TABLE DEFINITIONS ====================
@@ -237,14 +237,15 @@ export default function Laporan() {
         },
         pemeliharaan: {
             title: "Laporan Data Pemeliharaan",
-            columns: ["No", "Kode Aset", "Nama Aset", "Deskripsi", "Biaya", "Tgl Mulai", "Tgl Selesai", "Status"],
+            columns: ["No", "Kode Aset", "Nama Aset", "Deskripsi", "Biaya", "Tgl Mulai", "Tgl Selesai", "Diinput Oleh", "Status"],
             getData: () => {
                 const keyword = search.toLowerCase();
                 return pemeliharaans.filter(
                     (p) =>
                         p.aset?.nama_aset?.toLowerCase().includes(keyword) ||
                         p.aset?.kode_aset?.toLowerCase().includes(keyword) ||
-                        p.deskripsi?.toLowerCase().includes(keyword)
+                        p.deskripsi?.toLowerCase().includes(keyword) ||
+                        p.user?.username?.toLowerCase().includes(keyword)
                 );
             },
             renderRow: (item, index) => [
@@ -255,6 +256,7 @@ export default function Laporan() {
                 formatRupiah(item.biaya),
                 formatTanggal(item.tanggal),
                 formatTanggal(item.tanggal_selesai),
+                item.user?.username || item.user?.nama || "-",
                 getStatusPemeliharaan(item),
             ],
             exportRow: (item, index) => ({
@@ -265,6 +267,7 @@ export default function Laporan() {
                 Biaya: item.biaya,
                 "Tgl Mulai": formatTanggal(item.tanggal),
                 "Tgl Selesai": formatTanggal(item.tanggal_selesai),
+                "Diinput Oleh": item.user?.username || item.user?.nama || "-",
                 Status: getStatusPemeliharaan(item),
             }),
         },
@@ -290,7 +293,7 @@ export default function Laporan() {
         // Table
         const tableData = filteredData.map((item, index) => config.renderRow(item, index));
 
-        doc.autoTable({
+        autoTable(doc, {
             head: [config.columns],
             body: tableData,
             startY: 40,
@@ -430,7 +433,7 @@ export default function Laporan() {
             </div>
 
             {/* ==================== CONTENT AREA ==================== */}
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-600 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-600">
                 {/* TAB BUTTONS */}
                 <div className="border-b border-gray-200 overflow-x-auto">
                     <div className="flex min-w-max">
@@ -586,7 +589,7 @@ export default function Laporan() {
                                                             >
                                                                 {cell}
                                                             </span>
-                                                        ) : activeTab === "pemeliharaan" && cellIndex === 7 ? (
+                                                        ) : activeTab === "pemeliharaan" && cellIndex === 8 ? (
                                                             <span
                                                                 className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${
                                                                     cell === "Selesai"

@@ -114,26 +114,43 @@ class PenilaianController extends Controller
     public function recalculate()
     {
         $penilaians = Penilaian::all();
-        $updated = 0;
 
-        foreach ($penilaians as $penilaian) {
-            $data = [
-                'frekuensi_penggunaan' => $penilaian->frekuensi_penggunaan,
-                'usia_pemakaian_aset' => $penilaian->usia_pemakaian_aset,
-                'kondisi_penilaian' => $penilaian->kondisi_penilaian,
-                'nilai_ekonomis' => $penilaian->nilai_ekonomis,
-                'biaya_pemeliharaan' => $penilaian->biaya_pemeliharaan,
-                'tingkat_urgensi' => $penilaian->tingkat_urgensi,
+        if ($penilaians->isEmpty()) {
+            return response()->json([
+                'message' => 'Tidak ada data penilaian untuk dihitung ulang',
+                'total_updated' => 0
+            ]);
+        }
+
+        // Siapkan semua data dalam satu array untuk diproses sekaligus
+        $dataArray = $penilaians->map(function ($p) {
+            return [
+                'penilaian_id'         => $p->id,
+                'aset_id'              => $p->aset_id,
+                'kondisi_penilaian'    => $p->kondisi_penilaian,
+                'usia_pemakaian_aset'  => $p->usia_pemakaian_aset,
+                'frekuensi_penggunaan' => $p->frekuensi_penggunaan,
+                'tingkat_urgensi'      => $p->tingkat_urgensi,
+                'biaya_pemeliharaan'   => $p->biaya_pemeliharaan,
+                'nilai_ekonomis'       => $p->nilai_ekonomis,
             ];
+        })->all();
 
-            $totalNilai = $this->fuzzyMarcosService->calculateSingleMarcos($data);
-            
-            $penilaian->update(['total_nilai' => $totalNilai]);
-            $updated++;
+        // Hitung Fuzzy-MARCOS untuk semua penilaian sekaligus
+        $results = $this->fuzzyMarcosService->calculateMultipleMarcos($dataArray);
+
+        // Update total_nilai di database berdasarkan hasil
+        $updated = 0;
+        foreach ($results as $result) {
+            $penilaian = $penilaians->firstWhere('id', $result['penilaian_id']);
+            if ($penilaian) {
+                $penilaian->update(['total_nilai' => $result['total_nilai']]);
+                $updated++;
+            }
         }
 
         return response()->json([
-            'message' => "Berhasil menghitung ulang {$updated} penilaian",
+            'message' => "Berhasil menghitung ulang {$updated} penilaian menggunakan Fuzzy-MARCOS",
             'total_updated' => $updated
         ]);
     }
