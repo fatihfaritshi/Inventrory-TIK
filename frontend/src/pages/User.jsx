@@ -11,7 +11,9 @@ import {
   BriefcaseIcon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
+  EyeIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -19,6 +21,9 @@ export default function User() {
   const [modalOpen, setModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [search, setSearch] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const { showToast, showConfirm } = useToast();
 
   const [formData, setFormData] = useState({
     id: null,
@@ -47,15 +52,15 @@ export default function User() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus user ini?")) return;
-
-    fetch(`http://127.0.0.1:8000/api/users/${id}`, { method: "DELETE" })
-      .then((res) => res.json())
-      .then((result) => {
-        alert(result.message);
-        fetchUsers();
-      })
-      .catch((err) => console.error(err));
+    showConfirm("Apakah Anda yakin ingin menghapus user ini?", () => {
+      fetch(`http://127.0.0.1:8000/api/users/${id}`, { method: "DELETE" })
+        .then((res) => res.json())
+        .then((result) => {
+          showToast(result.message, "success");
+          fetchUsers();
+        })
+        .catch((err) => console.error(err));
+    });
   };
 
   const openCreateModal = () => {
@@ -102,11 +107,11 @@ export default function User() {
       .then(async (res) => {
         const result = await res.json();
         if (!res.ok) {
-          alert(result.message || "Gagal menyimpan user");
+          showToast(result.message || "Gagal menyimpan user", "error");
           console.error(result);
           return;
         }
-        alert(result.message);
+        showToast(result.message, "success");
         setModalOpen(false);
         fetchUsers();
       })
@@ -215,7 +220,7 @@ export default function User() {
             <button
               onClick={openCreateModal}
               className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-lg 
+                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -272,6 +277,15 @@ export default function User() {
                     </span>
                   </td>
                   <td className="px-6 py-3 text-sm flex justify-center gap-2">
+                    {/* DETAIL */}
+                    <button
+                      onClick={() => { setSelectedUser(user); setDetailOpen(true); }}
+                      className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition"
+                      title="Detail"
+                    >
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+
                     {/* EDIT */}
                     <button
                       onClick={() => openEditModal(user)}
@@ -325,7 +339,63 @@ export default function User() {
         )}
       </div>
 
-      {/* ================= MODAL ================= */}
+      {/* ================= MODAL DETAIL ================= */}
+      {detailOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden">
+            {/* Decorative gradient orbs */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/15 rounded-full blur-3xl"></div>
+
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+              <button
+                onClick={() => setDetailOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+                  <UsersIcon className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Detail User</h2>
+                  <p className="text-xs text-white/50 mt-0.5">{selectedUser.username}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-8 space-y-5 relative">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-blue-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Nama</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedUser.nama}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-indigo-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Username</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedUser.username}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-purple-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Role</p>
+                  <div className="mt-1.5">
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${selectedUser.role === "Administrator" ? "bg-purple-500/20 text-purple-400" : selectedUser.role === "Petugas" ? "bg-yellow-500/20 text-yellow-400" : "bg-lime-500/20 text-lime-400"}`}>
+                      {selectedUser.role}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-cyan-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Dibuat</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "-"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL FORM ================= */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="w-full max-w-md bg-[#0f172a]/70 backdrop-blur-xl border border-white/30 p-8 rounded-2xl shadow-2xl relative">
@@ -400,7 +470,7 @@ export default function User() {
 
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white rounded-lg mt-4 transition"
+                className="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white rounded-lg mt-4 transition"
               >
                 {isEdit ? "Update User" : "Tambah User"}
               </button>

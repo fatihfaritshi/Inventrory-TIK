@@ -4,10 +4,12 @@ import {
   EnvelopeIcon,
   LockClosedIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +30,7 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.message || "Login gagal");
+        showToast(data.message || "Login gagal", "error");
         return;
       }
 
@@ -46,7 +48,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      showToast("Server error", "error");
     }
   };
 
@@ -82,7 +84,7 @@ export default function Login() {
           </div>
 
           <h2 className="text-2xl font-semibold text-white">
-            Sistem Inventaris Aset
+            Sistem Manajemen Aset
           </h2>
           <p className="text-sm text-blue-100/70 mt-1">
             Bidang TIK Polda Sumbar

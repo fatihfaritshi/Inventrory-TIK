@@ -124,36 +124,79 @@ export default function Sidebar({ role, isOpen, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-8 left-0 w-full flex flex-col items-center text-xs text-white/40 tracking-wide gap-4">
+        <div className="absolute bottom-8 left-0 w-full px-6 flex flex-col items-center gap-3">
+          
+          {/* Divider */}
+          <div className="w-full h-px bg-white/[0.06] mb-1" />
+
+          {/* Logout Button */}
           <button
             onClick={() => {
-              // Hapus session/token dan redirect ke login
               localStorage.removeItem("user");
               localStorage.removeItem("token");
               window.location.href = "/";
             }}
             className="
-              flex items-center gap-2 px-4 py-3 bg-red-500/20 hover:bg-red-500/40
-              text-red-400 hover:text-white rounded-xl transition
+              group relative w-full flex items-center justify-center gap-2.5
+              px-4 py-2.5 rounded-xl overflow-hidden
+              border border-red-500/50 bg-red-500/[0.2]
+              text-red-300 text-sm font-medium tracking-wide
+              transition-all duration-250
+              hover:bg-red-500/[0.34] hover:border-red-500/60 hover:text-white hover:-translate-y-px
+              active:scale-[0.97]
             "
           >
+            {/* Radial glow on hover */}
+            <span className="
+              absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
+              transition-opacity duration-300
+              bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.2),transparent_70%)]
+              pointer-events-none
+            " />
+
+            {/* Icon box */}
+            <span className="
+              relative flex items-center justify-center
+              w-7 h-7 rounded-lg
+              border border-red-500/50 bg-red-500/30
+              group-hover:bg-red-500/25 group-hover:border-red-500/50
+              transition-all duration-250
+            ">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </span>
+
+            <span className="relative">Logout</span>
+
+            {/* Arrow */}
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-4"
+              className="relative w-3.5 h-3.5 transition-transform duration-250 group-hover:translate-x-0.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5"
-              />
+              <polyline points="9 18 15 12 9 6" />
             </svg>
-            Logout
           </button>
-          <span>© Bidang TIK Polda Sumbar</span>
+
+          <span className="text-[12px] text-white/25 tracking-wide">
+            © Bidang TIK Polda Sumbar
+          </span>
         </div>
       </aside>
     </>

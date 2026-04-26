@@ -26,7 +26,7 @@ export default function DashboardLayout() {
       />
 
       {/* Area kanan - margin left hanya di desktop */}
-      <div className="flex-1 flex flex-col md:ml-64">
+      <div className="flex-1 flex flex-col md:ml-64 min-w-0">
 
         {/* Navbar */}
         <Navbar
@@ -35,7 +35,7 @@ export default function DashboardLayout() {
         />
 
         {/* Konten halaman - padding responsif */}
-        <main className="flex-1 mt-16 md:mt-20 overflow-y-auto scrollbar-hide">
+        <main className="flex-1 mt-16 md:mt-20 overflow-y-auto scrollbar-hide min-w-0">
           {/* Container dengan max-width untuk konsistensi */}
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 md:py-6">
             <Outlet />

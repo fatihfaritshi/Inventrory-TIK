@@ -10,7 +10,9 @@ import {
   CubeIcon,
   XCircleIcon,
   MagnifyingGlassIcon,
+  EyeIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function Lokasi() {
   const [lokasis, setLokasis] = useState([]);
@@ -23,6 +25,9 @@ export default function Lokasi() {
   });
   const [isEdit, setIsEdit] = useState(false);
   const [search, setSearch] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedLokasi, setSelectedLokasi] = useState(null);
+  const { showToast, showConfirm } = useToast();
 
   useEffect(() => {
     fetchLokasis();
@@ -43,16 +48,15 @@ export default function Lokasi() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus lokasi ini?"))
-      return;
-
-    fetch(`http://127.0.0.1:8000/api/lokasis/${id}`, { method: "DELETE" })
-      .then((res) => res.json())
-      .then((result) => {
-        alert(result.message);
-        fetchLokasis();
-      })
-      .catch((err) => console.error(err));
+    showConfirm("Apakah Anda yakin ingin menghapus lokasi ini?", () => {
+      fetch(`http://127.0.0.1:8000/api/lokasis/${id}`, { method: "DELETE" })
+        .then((res) => res.json())
+        .then((result) => {
+          showToast(result.message, "success");
+          fetchLokasis();
+        })
+        .catch((err) => console.error(err));
+    });
   };
 
   const openCreateModal = () => {
@@ -90,11 +94,11 @@ export default function Lokasi() {
         const result = await res.json();
 
         if (!res.ok) {
-          alert(result.message || "Gagal menyimpan data");
+          showToast(result.message || "Gagal menyimpan data", "error");
           return;
         }
 
-        alert(result.message);
+        showToast(result.message, "success");
         setModalOpen(false);
         fetchLokasis();
       })
@@ -187,7 +191,7 @@ export default function Lokasi() {
             <button
               onClick={openCreateModal}
               className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-lg 
+                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -246,6 +250,15 @@ export default function Lokasi() {
 
                     {/* AKSI */}
                     <td className="px-6 py-3 text-sm flex justify-center gap-2">
+                      {/* DETAIL */}
+                      <button
+                        onClick={() => { setSelectedLokasi(lokasi); setDetailOpen(true); }}
+                        className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition"
+                        title="Detail"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </button>
+
                       {/* EDIT */}
                       <button
                         onClick={() => openEditModal(lokasi)}
@@ -304,7 +317,68 @@ export default function Lokasi() {
         )}
       </div>
 
-      {/* ================= MODAL (Tidak Diubah) ================= */}
+      {/* ================= MODAL DETAIL ================= */}
+      {detailOpen && selectedLokasi && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden">
+            {/* Decorative gradient orbs */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-yellow-500/15 rounded-full blur-3xl"></div>
+
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+              <button
+                onClick={() => setDetailOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+                  <MapPinIcon className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Detail Lokasi</h2>
+                  <p className="text-xs text-white/50 mt-0.5">{selectedLokasi.nama_lokasi}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-8 space-y-5 relative">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-blue-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Nama Lokasi</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedLokasi.nama_lokasi}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-indigo-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Jumlah Aset</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedLokasi.asets_count ?? 0} aset</p>
+                </div>
+              </div>
+
+              {/* Deskripsi */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-purple-500/50">
+                <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Deskripsi</p>
+                <p className="text-white/90 text-sm mt-1 leading-relaxed">{selectedLokasi.deskripsi || "-"}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-cyan-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Dibuat</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedLokasi.created_at ? new Date(selectedLokasi.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "-"}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-teal-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Terakhir Diubah</p>
+                  <p className="text-white font-semibold text-sm mt-1">{selectedLokasi.updated_at ? new Date(selectedLokasi.updated_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "-"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL FORM ================= */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="w-full max-w-md bg-[#0f172a]/70 backdrop-blur-xl border border-white/30 p-8 rounded-2xl shadow-2xl relative">
@@ -351,7 +425,7 @@ export default function Lokasi() {
               {/* BUTTON */}
               <button
                 type="submit"
-                className="w-full py-2 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg transition"
+                className="w-full py-2 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg transition"
               >
                 {isEdit ? "Update Lokasi" : "Tambah Lokasi"}
               </button>

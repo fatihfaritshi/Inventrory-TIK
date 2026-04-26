@@ -16,6 +16,7 @@ import {
     MagnifyingGlassIcon,
     ArrowPathIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function Pemeliharaan() {
     const [penilaians, setPenilaians] = useState([]);
@@ -27,11 +28,13 @@ export default function Pemeliharaan() {
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [activeTab, setActiveTab] = useState("ranking");
+    const { showToast, showConfirm } = useToast();
 
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("Semua");
     const [filterPrioritas, setFilterPrioritas] = useState("Semua");
     const [filterTanggal, setFilterTanggal] = useState("");
+    const [biayaDisplay, setBiayaDisplay] = useState("");
 
     const [formData, setFormData] = useState({
         aset_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "",
@@ -88,6 +91,14 @@ export default function Pemeliharaan() {
         return tglSelesai > today ? "Berlangsung" : "Selesai";
     };
 
+    const formatBiayaInput = (value) => {
+        // Hapus semua karakter selain angka
+        const angka = value.replace(/\D/g, "");
+        if (!angka) return "";
+        // Format dengan titik ribuan
+        return new Intl.NumberFormat("id-ID").format(angka);
+    };
+
     // ==================== TIMELINE GROUPING ====================
     const getTimelineGroup = (dateStr) => {
         if (!dateStr) return "Lebih Lama";
@@ -122,7 +133,10 @@ export default function Pemeliharaan() {
 
     // ==================== FORM HANDLERS ====================
     const handleChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
-    const resetForm = () => { setFormData({ aset_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "" }); };
+    const resetForm = () => {
+        setFormData({ aset_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "" });
+        setBiayaDisplay(""); 
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -133,10 +147,10 @@ export default function Pemeliharaan() {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
             });
             const result = await res.json();
-            if (!res.ok) { alert(result.message || "Gagal menyimpan data"); return; }
-            alert("✅ " + result.message);
+            if (!res.ok) { showToast(result.message || "Gagal menyimpan data", "error"); return; }
+            showToast(result.message, "success");
             resetForm(); setShowForm(false); fetchAllData();
-        } catch (err) { alert("❌ Terjadi kesalahan: " + err.message); }
+        } catch (err) { showToast("Terjadi kesalahan: " + err.message, "error"); }
     };
 
     const handleJadwalkanFromRanking = (penilaian) => {
@@ -144,26 +158,30 @@ export default function Pemeliharaan() {
             aset_id: penilaian.aset_id,
             tanggal: new Date().toISOString().split("T")[0],
             deskripsi: `Pemeliharaan ${penilaian.status_prioritas} - ${penilaian.aset?.nama_aset}`,
-            biaya: "", tanggal_selesai: "",
+            biaya: "",
+            tanggal_selesai: "",
         });
+        setBiayaDisplay(""); 
         setShowForm(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
-        try {
-            const res = await fetch(`http://127.0.0.1:8000/api/pemeliharaans/${id}`, { method: "DELETE" });
-            const result = await res.json(); alert(result.message); fetchAllData();
-        } catch (err) { console.error(err); }
+        showConfirm("Apakah Anda yakin ingin menghapus data ini?", async () => {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/pemeliharaans/${id}`, { method: "DELETE" });
+                const result = await res.json(); showToast(result.message, "success"); fetchAllData();
+            } catch (err) { console.error(err); }
+        });
     };
 
     const handleMarkCompleted = async (id) => {
-        if (!window.confirm("Tandai pemeliharaan ini sebagai selesai?")) return;
-        try {
-            const res = await fetch(`http://127.0.0.1:8000/api/pemeliharaans/${id}/selesai`, { method: "POST", headers: { "Content-Type": "application/json" } });
-            const result = await res.json(); alert(result.message); fetchAllData();
-        } catch (err) { console.error(err); }
+        showConfirm("Tandai pemeliharaan ini sebagai selesai?", async () => {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/pemeliharaans/${id}/selesai`, { method: "POST", headers: { "Content-Type": "application/json" } });
+                const result = await res.json(); showToast(result.message, "success"); fetchAllData();
+            } catch (err) { console.error(err); }
+        });
     };
 
     // ==================== FILTER LOGIC ====================
@@ -198,7 +216,7 @@ export default function Pemeliharaan() {
                     <div className="relative z-10"><p className="text-sm opacity-90 font-medium">Total Pemeliharaan</p><p className="text-4xl font-bold mt-2">{statistik.total_pemeliharaan || 0}</p></div>
                     <WrenchScrewdriverIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
                 </div>
-                <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform">
+                <div className="bg-gradient-to-br from-lime-500 to-lime-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
                     <div className="relative z-10"><p className="text-sm opacity-90 font-medium">Bulan Ini</p><p className="text-4xl font-bold mt-2">{statistik.pemeliharaan_bulan_ini || 0}</p></div>
                     <CalendarIcon className="absolute bottom-4 right-4 w-16 h-16 opacity-20" />
@@ -222,7 +240,7 @@ export default function Pemeliharaan() {
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><WrenchScrewdriverIcon className="w-8 h-8 text-blue-600" /> Manajemen Pemeliharaan Aset</h1>
                         <p className="text-sm text-gray-500 mt-1">Kelola jadwal dan riwayat pemeliharaan berdasarkan prioritas penilaian</p>
                     </div>
-                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700" : "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600"}`}>
+                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700" : "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"}`}>
                         {showForm ? (<><XMarkIcon className="w-5 h-5" /> Tutup Form</>) : (<><PlusIcon className="w-5 h-5" /> Tambah Pemeliharaan</>)}
                     </button>
                 </div>
@@ -250,8 +268,27 @@ export default function Pemeliharaan() {
                                 <textarea name="deskripsi" value={formData.deskripsi} onChange={handleChange} required rows={4} className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" placeholder="Jelaskan detail pekerjaan pemeliharaan..." />
                             </div>
                             <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-                                <label className="text-gray-700 text-sm font-bold mb-2 block">Biaya (Rp) <span className="text-red-500">*</span></label>
-                                <input type="number" name="biaya" value={formData.biaya} onChange={handleChange} required min="0" step="1000" className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" placeholder="0" />
+                                <label className="text-gray-700 text-sm font-bold mb-2 block">
+                                    Biaya (Rp) <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">
+                                        Rp
+                                    </span>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={biayaDisplay}
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            setBiayaDisplay(formatBiayaInput(e.target.value));
+                                            setFormData({ ...formData, biaya: raw });
+                                        }}
+                                        required
+                                        className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                                        placeholder="0"
+                                    />
+                                </div>
                             </div>
                             <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
                                 <label className="text-gray-700 text-sm font-bold mb-2 block">Tanggal Selesai (Opsional)</label>
@@ -282,7 +319,7 @@ export default function Pemeliharaan() {
                             className={`flex-1 py-4 px-6 font-semibold transition-all ${activeTab === "riwayat" ? "bg-blue-500 text-white border-b-4 border-blue-700" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}>
                             <div className="flex items-center justify-center gap-2">
                                 <ClockIcon className="w-5 h-5" /> Riwayat Pemeliharaan
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "riwayat" ? "bg-white/20" : "bg-green-100 text-green-600"}`}>{pemeliharaans.length}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "riwayat" ? "bg-white/20" : "bg-lime-100 text-lime-600"}`}>{pemeliharaans.length}</span>
                             </div>
                         </button>
                     </div>
@@ -378,7 +415,7 @@ export default function Pemeliharaan() {
                                                 <td className="px-4 py-4 text-sm text-gray-700">{penilaian.user?.username || "-"}</td>
                                                 <td className="px-4 py-4 text-sm text-gray-600 text-center">{penilaian.created_at ? new Date(penilaian.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
                                                 <td className="px-4 py-4 text-center">
-                                                    <button onClick={() => handleJadwalkanFromRanking(penilaian)} className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2 mx-auto">
+                                                    <button onClick={() => handleJadwalkanFromRanking(penilaian)} className="px-4 py-2 bg-gradient-to-r from-lime-500 to-lime-700 hover:from-lime-600 hover:to-lime-800 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2 mx-auto">
                                                         <CalendarIcon className="w-4 h-4" /> Jadwalkan
                                                     </button>
                                                 </td>
@@ -398,7 +435,7 @@ export default function Pemeliharaan() {
                         /* ==================== TAB 2: RIWAYAT PEMELIHARAAN ==================== */
                         <div>
                             <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                                <WrenchScrewdriverIcon className="w-7 h-7 text-green-600" /> Riwayat Pemeliharaan Aset
+                                <WrenchScrewdriverIcon className="w-7 h-7 text-lime-600" /> Riwayat Pemeliharaan Aset
                             </h2>
                             <p className="text-sm text-gray-500 mb-6">Seluruh data pemeliharaan aset, dikelompokkan berdasarkan waktu</p>
 
@@ -447,17 +484,25 @@ export default function Pemeliharaan() {
                                                                     <td className="px-4 py-3 text-sm text-gray-700">{item.user?.username || item.user?.nama || "-"}</td>
                                                                     <td className="px-4 py-3 text-center">
                                                                         {status === "Selesai" ? (
-                                                                            <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-green-500">Selesai</span>
+                                                                            <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-lime-600">Selesai</span>
                                                                         ) : (
                                                                             <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-yellow-500">Berlangsung</span>
                                                                         )}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-center">
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <button onClick={() => { setSelectedItem(item); setDetailOpen(true); }} className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition" title="Detail">
+                                                                    <td className="px-4 py-3 text-sm">
+                                                                        <div className="flex gap-2 justify-center">
+                                                                            <button
+                                                                                onClick={() => { setSelectedItem(item); setDetailOpen(true); }}
+                                                                                className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition shadow-md"
+                                                                                title="Lihat Detail"
+                                                                            >
                                                                                 <EyeIcon className="w-4 h-4" />
                                                                             </button>
-                                                                            <button onClick={() => handleDelete(item.pemeliharaan_id)} className="p-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition" title="Hapus">
+                                                                            <button
+                                                                                onClick={() => handleDelete(item.pemeliharaan_id)}
+                                                                                className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition shadow-md"
+                                                                                title="Hapus"
+                                                                            >
                                                                                 <TrashIcon className="w-4 h-4" />
                                                                             </button>
                                                                         </div>
@@ -479,23 +524,95 @@ export default function Pemeliharaan() {
 
             {/* ==================== MODAL DETAIL ==================== */}
             {detailOpen && selectedItem && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl relative">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-t-3xl text-white relative">
-                            <button onClick={() => setDetailOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition"><XMarkIcon className="w-6 h-6" /></button>
-                            <h2 className="text-2xl font-bold">Detail Pemeliharaan</h2>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Kode Aset</p><p className="font-bold text-gray-800">{selectedItem.aset?.kode_aset}</p></div>
-                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Nama Aset</p><p className="font-bold text-gray-800">{selectedItem.aset?.nama_aset}</p></div>
-                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Tanggal Mulai</p><p className="font-bold text-gray-800">{new Date(selectedItem.tanggal).toLocaleDateString("id-ID")}</p></div>
-                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Tanggal Selesai</p><p className="font-bold text-gray-800">{selectedItem.tanggal_selesai ? new Date(selectedItem.tanggal_selesai).toLocaleDateString("id-ID") : "Belum selesai"}</p></div>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="w-full max-w-2xl bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+                        {/* Decorative gradient orbs */}
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-lime-500/15 rounded-full blur-3xl"></div>
+
+                        {/* Header */}
+                        <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+                            <button
+                                onClick={() => setDetailOpen(false)}
+                                className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+                                    <WrenchScrewdriverIcon className="w-6 h-6 text-blue-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Detail Pemeliharaan</h2>
+                                    <p className="text-xs text-white/50 mt-0.5">{selectedItem.aset?.kode_aset || ""}</p>
+                                </div>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Deskripsi</p><p className="text-gray-800">{selectedItem.deskripsi}</p></div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200"><p className="text-xs text-blue-600 mb-1 font-semibold">Total Biaya</p><p className="text-2xl font-bold text-blue-700">{formatRupiah(selectedItem.biaya)}</p></div>
-                                <div className="bg-gray-50 p-4 rounded-xl"><p className="text-xs text-gray-500 mb-1">Diinput Oleh</p><p className="font-bold text-gray-800">{selectedItem.user?.username || selectedItem.user?.nama || "-"}</p></div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-8 space-y-5 relative">
+                            {/* Informasi Aset */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-blue-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Kode Aset</p>
+                                    <p className="text-white font-semibold text-sm mt-1 font-mono">{selectedItem.aset?.kode_aset || "-"}</p>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-indigo-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Nama Aset</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedItem.aset?.nama_aset || "-"}</p>
+                                </div>
+                            </div>
+
+                            {/* Biaya Card */}
+                            <div className="bg-gradient-to-r from-blue-600/30 to-indigo-600/20 rounded-xl p-5 border border-blue-500/20 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -mr-6 -mt-6"></div>
+                                <div className="relative flex items-center justify-between">
+                                    <div>
+                                        <p className="text-xs text-blue-300/80 uppercase tracking-wider font-medium">Total Biaya</p>
+                                        <p className="text-3xl font-bold text-white mt-1">{formatRupiah(selectedItem.biaya)}</p>
+                                    </div>
+                                    <CurrencyDollarIcon className="w-12 h-12 text-blue-400/30" />
+                                </div>
+                            </div>
+
+                            {/* Jadwal */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-lime-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Tanggal Mulai</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{new Date(selectedItem.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-yellow-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Tanggal Selesai</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedItem.tanggal_selesai ? new Date(selectedItem.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "Belum selesai"}</p>
+                                </div>
+                            </div>
+
+                            {/* Deskripsi */}
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-purple-500/50">
+                                <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Deskripsi</p>
+                                <p className="text-white/90 text-sm mt-1 leading-relaxed">{selectedItem.deskripsi}</p>
+                            </div>
+
+                            {/* User & Status */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-cyan-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Diinput Oleh</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedItem.user?.username || selectedItem.user?.nama || "-"}</p>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-teal-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Status</p>
+                                    <div className="mt-1.5">
+                                        {(() => {
+                                            const status = getStatusPemeliharaan(selectedItem);
+                                            return (
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${status === "Selesai" ? "bg-lime-500/20 text-lime-400 border border-lime-500/30" : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${status === "Selesai" ? "bg-lime-400" : "bg-yellow-400 animate-pulse"}`}></span>
+                                                    {status}
+                                                </span>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

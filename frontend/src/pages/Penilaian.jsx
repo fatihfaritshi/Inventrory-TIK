@@ -14,6 +14,7 @@ import {
     MagnifyingGlassIcon,
     ClockIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function Penilaian() {
     const [penilaians, setPenilaians] = useState([]);
@@ -24,6 +25,7 @@ export default function Penilaian() {
     const [selectedPenilaian, setSelectedPenilaian] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [activeTab, setActiveTab] = useState("ranking"); // ranking | riwayat
+    const { showToast, showConfirm } = useToast();
 
     // Filter states
     const [search, setSearch] = useState("");
@@ -79,11 +81,12 @@ export default function Penilaian() {
     };
 
     const handleDelete = (id) => {
-        if (!window.confirm("Apakah Anda yakin ingin menghapus penilaian ini?")) return;
-        fetch(`http://127.0.0.1:8000/api/penilaians/${id}`, { method: "DELETE" })
-            .then((res) => res.json())
-            .then((result) => { alert(result.message); fetchAllData(); })
-            .catch((err) => console.error(err));
+        showConfirm("Apakah Anda yakin ingin menghapus penilaian ini?", () => {
+            fetch(`http://127.0.0.1:8000/api/penilaians/${id}`, { method: "DELETE" })
+                .then((res) => res.json())
+                .then((result) => { showToast(result.message, "success"); fetchAllData(); })
+                .catch((err) => console.error(err));
+        });
     };
 
     const openDetailModal = (penilaian) => { setSelectedPenilaian(penilaian); setDetailOpen(true); };
@@ -107,18 +110,18 @@ export default function Penilaian() {
         })
             .then(async (res) => {
                 const result = await res.json();
-                if (!res.ok) { alert(result.message || JSON.stringify(result.errors) || "Gagal menyimpan data"); return; }
-                alert(`✅ ${result.message}\n\n📊 Total Nilai: ${result.total_nilai}\n🎯 Prioritas: ${result.prioritas}`);
+                if (!res.ok) { showToast(result.message || JSON.stringify(result.errors) || "Gagal menyimpan data", "error"); return; }
+                showToast(`${result.message}\n📊 Total Nilai: ${result.total_nilai} | 🎯 Prioritas: ${result.prioritas}`, "success", 5000);
                 resetForm(); setShowForm(false); fetchAllData();
             })
-            .catch((err) => { alert('Terjadi kesalahan koneksi: ' + err.message); });
+            .catch((err) => { showToast('Terjadi kesalahan koneksi: ' + err.message, "error"); });
     };
 
     // ==================== HELPERS ====================
     const getPrioritas = (nilai) => {
-        if (nilai >= 70) return { label: "Tinggi", color: "bg-red-500", desc: "Perlu Segera" };
+        if (nilai >= 70) return { label: "Tinggi", color: "bg-red-600", desc: "Perlu Segera" };
         if (nilai >= 45) return { label: "Sedang", color: "bg-yellow-500", desc: "Terjadwal" };
-        return { label: "Rendah", color: "bg-lime-500", desc: "Baik" };
+        return { label: "Rendah", color: "bg-lime-600", desc: "Baik" };
     };
 
     // ==================== TIMELINE GROUPING ====================
@@ -292,7 +295,7 @@ export default function Penilaian() {
                             className={`flex-1 py-4 px-6 font-semibold transition-all ${activeTab === "riwayat" ? "bg-blue-500 text-white border-b-4 border-blue-700" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}>
                             <div className="flex items-center justify-center gap-2">
                                 <ClockIcon className="w-5 h-5" /> Riwayat Penilaian
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "riwayat" ? "bg-white/20" : "bg-green-100 text-green-600"}`}>{penilaians.length}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "riwayat" ? "bg-white/20" : "bg-lime-100 text-lime-600"}`}>{penilaians.length}</span>
                             </div>
                         </button>
                     </div>
@@ -473,52 +476,105 @@ export default function Penilaian() {
 
             {/* ================= MODAL DETAIL ================= */}
             {detailOpen && selectedPenilaian && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-8 rounded-t-3xl text-white relative">
-                            <button onClick={() => setDetailOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition"><XMarkIcon className="w-6 h-6" /></button>
-                            <h2 className="text-3xl font-bold mb-2">Detail Penilaian Aset</h2>
-                            <p className="text-blue-100">Hasil perhitungan menggunakan metode Fuzzy-MARCOS</p>
-                        </div>
-                        <div className="p-8">
-                            <div className="mb-8">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><ArchiveBoxIcon className="w-6 h-6 text-blue-600" /> Informasi Aset</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-500 mb-1">Kode Aset</p><p className="font-bold text-gray-800 font-mono">{selectedPenilaian.aset?.kode_aset || "-"}</p></div>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-500 mb-1">Nama Aset</p><p className="font-bold text-gray-800">{selectedPenilaian.aset?.nama_aset || "-"}</p></div>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="w-full max-w-2xl bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden animate-[fadeIn_0.3s_ease-out] max-h-[90vh] overflow-y-auto scrollbar-hide">
+                        {/* Decorative gradient orbs */}
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500/15 rounded-full blur-3xl"></div>
+
+                        {/* Header */}
+                        <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+                            <button
+                                onClick={() => setDetailOpen(false)}
+                                className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+                                    <ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Detail Penilaian Aset</h2>
+                                    <p className="text-xs text-white/50 mt-0.5">Metode Fuzzy-MARCOS</p>
                                 </div>
                             </div>
-                            <div className="mb-8">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-600" /> Kriteria Penilaian</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-8 space-y-5 relative">
+                            {/* Informasi Aset */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-blue-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Kode Aset</p>
+                                    <p className="text-white font-semibold text-sm mt-1 font-mono">{selectedPenilaian.aset?.kode_aset || "-"}</p>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-indigo-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Nama Aset</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedPenilaian.aset?.nama_aset || "-"}</p>
+                                </div>
+                            </div>
+
+                            {/* Score Card */}
+                            {(() => {
+                                const prioritas = getPrioritas(selectedPenilaian.total_nilai);
+                                return (
+                                    <div className={`rounded-xl p-5 text-white relative overflow-hidden ${prioritas.color}`}>
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+                                        <div className="relative flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs opacity-80 uppercase tracking-wider font-medium">Total Nilai</p>
+                                                <p className="text-4xl font-bold mt-1">{selectedPenilaian.total_nilai}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="px-2.5 py-0.5 bg-white/20 rounded-full text-[11px] font-bold">{prioritas.label}</span>
+                                                    <span className="text-xs opacity-80">{prioritas.desc}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <ChartBarIcon className="w-14 h-14 opacity-30" />
+                                            </div>
+                                        </div>
+                                        {/* Progress bar */}
+                                        <div className="mt-3 w-full bg-white/20 rounded-full h-1.5">
+                                            <div className="bg-white/60 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(selectedPenilaian.total_nilai, 100)}%` }}></div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Kriteria Penilaian */}
+                            <div>
+                                <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium mb-3">Kriteria Penilaian</p>
+                                <div className="grid grid-cols-2 gap-3">
                                     {[
-                                        { label: "Kondisi Fisik (C1 - 25%)", value: selectedPenilaian.kondisi_penilaian, bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600" },
-                                        { label: "Usia Pemakaian (C2 - 15%)", value: selectedPenilaian.usia_pemakaian_aset, bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600" },
-                                        { label: "Frekuensi Penggunaan (C3 - 20%)", value: selectedPenilaian.frekuensi_penggunaan, bg: "bg-lime-50", border: "border-lime-200", text: "text-lime-600" },
-                                        { label: "Tingkat Urgensi (C4 - 10%)", value: selectedPenilaian.tingkat_urgensi, bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-600" },
-                                        { label: "Biaya Pemeliharaan (C5 - 15%)", value: selectedPenilaian.biaya_pemeliharaan, bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600" },
-                                        { label: "Nilai Ekonomis (C6 - 15%)", value: selectedPenilaian.nilai_ekonomis, bg: "bg-red-50", border: "border-red-200", text: "text-red-600" },
-                                    ].map((k) => (
-                                        <div key={k.label} className={`${k.bg} p-4 rounded-xl border-2 ${k.border}`}>
-                                            <p className={`text-xs ${k.text} font-semibold mb-1`}>{k.label}</p>
-                                            <p className="font-bold text-gray-800">{k.value}</p>
+                                        { label: "Kondisi Fisik (C1)", value: selectedPenilaian.kondisi_penilaian, color: "blue" },
+                                        { label: "Usia Pemakaian (C2)", value: selectedPenilaian.usia_pemakaian_aset, color: "purple" },
+                                        { label: "Frekuensi Penggunaan (C3)", value: selectedPenilaian.frekuensi_penggunaan, color: "lime" },
+                                        { label: "Tingkat Urgensi (C4)", value: selectedPenilaian.tingkat_urgensi, color: "yellow" },
+                                        { label: "Biaya Pemeliharaan (C5)", value: selectedPenilaian.biaya_pemeliharaan, color: "orange" },
+                                        { label: "Nilai Ekonomis (C6)", value: selectedPenilaian.nilai_ekonomis, color: "red" },
+                                    ].map((item) => (
+                                        <div
+                                            key={item.label}
+                                            className={`bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-${item.color}-500/50`}
+                                        >
+                                            <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">{item.label}</p>
+                                            <p className="text-white font-semibold text-sm mt-1">{item.value}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className={`rounded-2xl p-6 text-white mb-6 ${getPrioritas(selectedPenilaian.total_nilai).color}`}>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm opacity-90 mb-1">Total Nilai (Fuzzy-MARCOS)</p>
-                                        <p className="text-6xl font-bold">{selectedPenilaian.total_nilai}</p>
-                                        <div className="mt-4 space-y-1"><p className="text-sm opacity-90">Prioritas: <span className="font-bold text-lg">{getPrioritas(selectedPenilaian.total_nilai).label}</span></p></div>
-                                    </div>
-                                    <ChartBarIcon className="w-24 h-24 opacity-30" />
+
+                            {/* Info Tambahan */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-cyan-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Dinilai Oleh</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedPenilaian.user?.username || "-"}</p>
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-500 mb-1">Dinilai Oleh</p><p className="font-bold text-gray-800">{selectedPenilaian.user?.username || "-"}</p></div>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-500 mb-1">Tanggal Penilaian</p><p className="font-bold text-gray-800">{selectedPenilaian.created_at ? new Date(selectedPenilaian.created_at).toLocaleDateString("id-ID", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) : "-"}</p></div>
+                                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-teal-500/50">
+                                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Tanggal Penilaian</p>
+                                    <p className="text-white font-semibold text-sm mt-1">{selectedPenilaian.created_at ? new Date(selectedPenilaian.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "-"}</p>
+                                </div>
                             </div>
                         </div>
                     </div>

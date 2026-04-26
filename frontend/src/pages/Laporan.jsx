@@ -17,6 +17,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { useToast } from "../components/Toast";
 
 // ==================== TAB CONFIGURATION ====================
 const TABS = [
@@ -24,7 +25,7 @@ const TABS = [
     { key: "aset", label: "Aset", icon: ArchiveBoxIcon, color: "from-indigo-500 to-indigo-700" },
     { key: "lokasi", label: "Lokasi", icon: MapPinIcon, color: "from-yellow-500 to-yellow-700" },
     { key: "penilaian", label: "Penilaian", icon: ClipboardDocumentCheckIcon, color: "from-purple-500 to-purple-700" },
-    { key: "pemeliharaan", label: "Pemeliharaan", icon: WrenchScrewdriverIcon, color: "from-green-500 to-green-700" },
+    { key: "pemeliharaan", label: "Pemeliharaan", icon: WrenchScrewdriverIcon, color: "from-lime-500 to-lime-700" },
 ];
 
 export default function Laporan() {
@@ -32,6 +33,7 @@ export default function Laporan() {
     const [activeTab, setActiveTab] = useState("user");
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
+    const { showToast } = useToast();
 
     // Data states
     const [users, setUsers] = useState([]);
@@ -73,7 +75,7 @@ export default function Laporan() {
             setPemeliharaans(pemeliharaanData.data || []);
         } catch (err) {
             console.error("❌ Fetch error:", err);
-            alert("Gagal memuat data: " + err.message);
+            showToast("Gagal memuat data: " + err.message, "error");
         } finally {
             setLoading(false);
         }
@@ -394,7 +396,7 @@ export default function Laporan() {
                         <button
                             onClick={exportExcel}
                             disabled={filteredData.length === 0}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-lime-500 to-lime-700 hover:from-lime-600 hover:to-lime-800 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <TableCellsIcon className="w-5 h-5" />
                             Export Excel
@@ -415,11 +417,10 @@ export default function Laporan() {
                                 setActiveTab(tab.key);
                                 setSearch("");
                             }}
-                            className={`relative rounded-2xl shadow-lg p-5 text-white overflow-hidden group transition-all duration-300 text-left ${
-                                isActive
+                            className={`relative rounded-2xl shadow-lg p-5 text-white overflow-hidden group transition-all duration-300 text-left ${isActive
                                     ? `bg-gradient-to-br ${tab.color} scale-105 ring-4 ring-white/50`
                                     : "bg-gradient-to-br from-gray-400 to-gray-500 hover:scale-105 opacity-75 hover:opacity-100"
-                            }`}
+                                }`}
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500"></div>
                             <div className="relative z-10">
@@ -446,11 +447,10 @@ export default function Laporan() {
                                         setActiveTab(tab.key);
                                         setSearch("");
                                     }}
-                                    className={`flex-1 min-w-[140px] py-3.5 px-4 font-semibold transition-all text-sm ${
-                                        activeTab === tab.key
+                                    className={`flex-1 min-w-[140px] py-3.5 px-4 font-semibold transition-all text-sm ${activeTab === tab.key
                                             ? "bg-blue-500 text-white border-b-4 border-blue-700"
                                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center justify-center gap-2">
                                         <Icon className="w-4 h-4" />
@@ -503,7 +503,7 @@ export default function Laporan() {
                                 <button
                                     onClick={exportExcel}
                                     disabled={filteredData.length === 0}
-                                    className="flex items-center gap-1.5 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-600 font-medium rounded-lg transition text-sm border border-green-200 disabled:opacity-50"
+                                    className="flex items-center gap-1.5 px-3 py-2 bg-lime-50 hover:bg-lime-100 text-lime-600 font-medium rounded-lg transition text-sm border border-lime-200 disabled:opacity-50"
                                 >
                                     <ArrowDownTrayIcon className="w-4 h-4" />
                                     Excel
@@ -514,23 +514,22 @@ export default function Laporan() {
                 </div>
 
                 {/* TABLE */}
-                <div className="p-6">
+                <div className="p-6" style={{ overflow: "hidden", maxWidth: "100%" }}>
                     {loading ? (
                         <div className="text-center py-20">
                             <ArrowPathIcon className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" />
                             <p className="text-gray-600 font-medium">Memuat data laporan...</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
+                        <div style={{ overflowX: "auto", width: "100%", maxWidth: "100%", WebkitOverflowScrolling: "touch" }}>
+                            <table className="divide-y divide-gray-200" style={{ minWidth: "max-content", width: "100%" }}>
                                 <thead className="bg-gray-50">
                                     <tr>
                                         {config.columns.map((col, i) => (
                                             <th
                                                 key={i}
-                                                className={`px-4 py-3 text-sm font-bold text-gray-700 uppercase whitespace-nowrap ${
-                                                    i === 0 ? "text-center" : "text-left"
-                                                }`}
+                                                className={`px-4 py-3 text-sm font-bold text-gray-700 uppercase whitespace-nowrap ${i === 0 ? "text-center" : "text-left"
+                                                    }`}
                                             >
                                                 {col}
                                             </th>
@@ -548,54 +547,49 @@ export default function Laporan() {
                                                 {rowData.map((cell, cellIndex) => (
                                                     <td
                                                         key={cellIndex}
-                                                        className={`px-4 py-3 text-sm text-gray-700 whitespace-nowrap ${
-                                                            cellIndex === 0
+                                                        className={`px-4 py-3 text-sm text-gray-700 whitespace-nowrap ${cellIndex === 0
                                                                 ? "text-center font-semibold"
                                                                 : ""
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {/* Special rendering for status-like cells */}
                                                         {activeTab === "aset" && cellIndex === 7 ? (
                                                             <span
-                                                                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                                    cell === "Aktif"
+                                                                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cell === "Aktif"
                                                                         ? "bg-lime-100 text-lime-800"
                                                                         : "bg-red-100 text-red-800"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {cell}
                                                             </span>
                                                         ) : activeTab === "user" && cellIndex === 3 ? (
                                                             <span
-                                                                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                                    cell === "Administrator"
+                                                                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cell === "Administrator"
                                                                         ? "bg-purple-100 text-purple-800"
                                                                         : cell === "Petugas"
-                                                                        ? "bg-yellow-100 text-yellow-800"
-                                                                        : "bg-lime-100 text-lime-800"
-                                                                }`}
+                                                                            ? "bg-yellow-100 text-yellow-800"
+                                                                            : "bg-lime-100 text-lime-800"
+                                                                    }`}
                                                             >
                                                                 {cell}
                                                             </span>
                                                         ) : activeTab === "penilaian" && cellIndex === 8 ? (
                                                             <span
-                                                                className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${
-                                                                    cell === "Tinggi"
+                                                                className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${cell === "Tinggi"
                                                                         ? "bg-red-500"
                                                                         : cell === "Sedang"
-                                                                        ? "bg-yellow-500"
-                                                                        : "bg-lime-500"
-                                                                }`}
+                                                                            ? "bg-yellow-500"
+                                                                            : "bg-lime-600"
+                                                                    }`}
                                                             >
                                                                 {cell}
                                                             </span>
                                                         ) : activeTab === "pemeliharaan" && cellIndex === 8 ? (
                                                             <span
-                                                                className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${
-                                                                    cell === "Selesai"
-                                                                        ? "bg-green-500"
+                                                                className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${cell === "Selesai"
+                                                                        ? "bg-lime-600"
                                                                         : "bg-yellow-500"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {cell}
                                                             </span>

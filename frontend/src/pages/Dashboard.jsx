@@ -215,33 +215,43 @@ export default function Dashboard() {
     return (
         <div className="space-y-6">
             {/* ==================== WELCOME BANNER ==================== */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
-                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-white/5 rounded-full -mb-64"></div>
-                <div className="relative z-10">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold">
-                                Selamat Datang, {user.username}! 👋
-                            </h1>
-                            <p className="text-blue-100 mt-2 text-lg">
-                                Sistem Manajemen Inventaris Aset — Ringkasan data terkini
-                            </p>
-                            <div className="flex items-center gap-2 mt-3">
-                                <CalendarIcon className="w-4 h-4 text-blue-200" />
-                                <span className="text-blue-200 text-sm">
-                                    {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                                </span>
-                            </div>
+            <div className="relative bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl shadow-xl p-8 text-white overflow-hidden">
+                
+                {/* Decorative circles */}
+                <div className="absolute top-0 right-0 w-72 h-72 bg-blue-900/30 rounded-full -mr-20 -mt-20 blur-2xl"></div>
+                <div className="absolute bottom-0 right-1/3 w-48 h-48 bg-blue-400/20 rounded-full -mb-16 blur-xl"></div>
+                <div className="absolute top-1/2 right-12 w-24 h-24 bg-white/5 rounded-full"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    
+                    {/* Left: Text */}
+                    <div className="space-y-2">
+                        <p className="text-blue-300 text-sm font-medium tracking-widest uppercase">
+                            Dashboard Inventaris
+                        </p>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Selamat Datang, {user.username} 👋
+                        </h1>
+                        <p className="text-blue-200 text-sm max-w-md">
+                            Sistem Manajemen Aset — Ringkasan data terkini
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-300"></div>
+                            <span className="text-blue-300 text-xs">
+                                {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            </span>
                         </div>
-                        <button
-                            onClick={fetchAll}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition font-semibold"
-                        >
-                            <ArrowPathIcon className="w-5 h-5" />
-                            Refresh Data
-                        </button>
                     </div>
+
+                    {/* Right: Button */}
+                    <button
+                        onClick={fetchAll}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm rounded-xl transition-all duration-200 font-medium text-sm shrink-0"
+                    >
+                        <ArrowPathIcon className="w-4 h-4" />
+                        Refresh Data
+                    </button>
+
                 </div>
             </div>
 

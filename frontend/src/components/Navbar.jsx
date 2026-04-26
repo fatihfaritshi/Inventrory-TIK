@@ -1,6 +1,7 @@
 import { UserCircleIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "./Toast";
 
 export default function Navbar({ user, onToggleSidebar }) {
   const location = useLocation();
@@ -40,7 +41,7 @@ export default function Navbar({ user, onToggleSidebar }) {
 
           <div>
             <h1 className="text-lg md:text-2xl font-extrabold text-white">
-              Sistem Inventaris Aset
+              Sistem Manajemen Aset
             </h1>
             <p className="text-xs md:text-sm text-blue-200 hidden sm:block">
               {pageTitles[location.pathname] || ""}
@@ -90,17 +91,18 @@ function UserProfileModal({ user, onClose }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
     if (password.length < 6) {
-      alert("Password minimal 6 karakter");
+      showToast("Password minimal 6 karakter", "warning");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Password dan konfirmasi tidak sama");
+      showToast("Password dan konfirmasi tidak sama", "warning");
       return;
     }
 
@@ -126,173 +128,130 @@ function UserProfileModal({ user, onClose }) {
       const result = await res.json();
 
       if (!res.ok) {
-        alert(result.message || "Gagal mengubah password");
+        showToast(result.message || "Gagal mengubah password", "error");
         return;
       }
 
-      alert("Password berhasil diubah");
+      showToast("Password berhasil diubah", "success");
       setPassword("");
       setConfirmPassword("");
       onClose();
     } catch (err) {
-      alert("Terjadi kesalahan server");
+      showToast("Terjadi kesalahan server", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div
-        className="
-          relative w-full max-w-md p-6 md:p-8 rounded-2xl
-          backdrop-blur-2xl
-          border border-white/30
-          shadow-[0_0_80px_rgba(59,130,246,0.25)]
-          text-white
-        "
-      >
-        {/* GLOW LAYER */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-blue-700/30 via-transparent to-blue-500/10 pointer-events-none" />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden">
+        {/* Decorative gradient orbs */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500/15 rounded-full blur-3xl"></div>
 
-        {/* CLOSE */}
-        <button
-          onClick={onClose}
-          className="
-                absolute top-3 right-3
-                p-2 rounded-full
-                text-white
-                transition-all duration-200
-                hover:bg-red-500/30 hover:text-red-300
-                active:scale-95
-              "
-        >
-          <XMarkIcon className="w-5 h-5 text-white" />
-        </button>
-
-        {/* HEADER */}
-        <div className="relative mb-6">
-          <h2 className="text-xl font-bold text-white">
-            Profil User
-          </h2>
-          <p className="text-sm text-white/70">
-            Informasi akun & pengaturan password
-          </p>
-        </div>
-
-        {/* DETAIL USER */}
-        <div
-          className="
-            relative grid grid-cols-2 gap-4 mb-6 p-4 rounded-xl
-            bg-white/10 backdrop-blur-md
-            border border-white/20
-          "
-        >
-          <div>
-            <p className="text-white/60 text-xs">Nama</p>
-            <p className="font-semibold text-sm">{user.nama}</p>
-          </div>
-          <div>
-            <p className="text-white/60 text-xs">Username</p>
-            <p className="font-semibold text-sm">{user.username}</p>
-          </div>
-          <div>
-            <p className="text-white/60 text-xs">Role</p>
-            <p className="font-semibold text-sm">{user.role}</p>
-          </div>
-          <div>
-            <p className="text-white/60 text-xs">Dibuat</p>
-            <p className="font-semibold text-sm">
-              {user.created_at
-                ? new Date(user.created_at).toLocaleDateString("id-ID", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })
-                : "-"}
-            </p>
+        {/* Header */}
+        <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+              <UserCircleIcon className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Profil User</h2>
+              <p className="text-xs text-white/50 mt-0.5">Informasi akun & pengaturan password</p>
+            </div>
           </div>
         </div>
 
-        {/* FORM */}
-        <form onSubmit={handleChangePassword} className="relative space-y-4">
-          <div>
-            <label className="text-sm text-white/80">
-              Password Baru
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimal 6 karakter"
-              className="
-                w-full mt-1 px-3 py-2 rounded-lg
-                bg-white/10 text-white placeholder-white/40
-                border border-white/20
-                backdrop-blur-md
-                focus:outline-none focus:ring-2 focus:ring-blue-400/60
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/80">
-              Konfirmasi Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Ulangi password"
-              className="
-                w-full mt-1 px-3 py-2 rounded-lg
-                bg-white/10 text-white placeholder-white/40
-                border border-white/20
-                backdrop-blur-md
-                focus:outline-none focus:ring-2 focus:ring-blue-400/60
-              "
-            />
-          </div>
-
-          {/* ERROR */}
-          {password &&
-            confirmPassword &&
-            password !== confirmPassword && (
-              <p className="text-sm text-red-400">
-                Password dan konfirmasi tidak sama
+        {/* Body */}
+        <div className="p-8 space-y-5 relative">
+          {/* Detail User Cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-blue-500/50">
+              <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Nama</p>
+              <p className="text-white font-semibold text-sm mt-1">{user.nama}</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-indigo-500/50">
+              <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Username</p>
+              <p className="text-white font-semibold text-sm mt-1">{user.username}</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-purple-500/50">
+              <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Role</p>
+              <p className="text-white font-semibold text-sm mt-1">{user.role}</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-cyan-500/50">
+              <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Dibuat</p>
+              <p className="text-white font-semibold text-sm mt-1">
+                {user.created_at
+                  ? new Date(user.created_at).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "-"}
               </p>
-            )}
-
-          {/* ACTION */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="
-                px-4 py-2 rounded-lg
-                bg-white/10 hover:bg-white/40
-                border border-white/20
-                transition
-              "
-            >
-              Batal
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading || password !== confirmPassword}
-              className="
-                px-4 py-2 rounded-lg font-semibold
-                bg-gradient-to-r from-blue-500 to-blue-700
-              hover:from-yellow-500 hover:to-yellow-600
-                disabled:opacity-50 disabled:cursor-not-allowed
-                shadow-lg
-              "
-            >
-              {loading ? "Menyimpan..." : "Ganti Password"}
-            </button>
+            </div>
           </div>
-        </form>
+
+          {/* Form Ganti Password */}
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Ganti Password</p>
+            <div>
+              <label className="text-sm text-white/60 mb-1 block">Password Baru</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimal 6 karakter"
+                className="w-full px-3 py-2 rounded-lg bg-white/5 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-white/60 mb-1 block">Konfirmasi Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Ulangi password"
+                className="w-full px-3 py-2 rounded-lg bg-white/5 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition text-sm"
+              />
+            </div>
+
+            {/* Error */}
+            {password &&
+              confirmPassword &&
+              password !== confirmPassword && (
+                <p className="text-sm text-red-400">
+                  Password dan konfirmasi tidak sama
+                </p>
+              )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm transition"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={loading || password !== confirmPassword}
+                className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-white text-sm transition"
+              >
+                {loading ? "Menyimpan..." : "Ganti Password"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

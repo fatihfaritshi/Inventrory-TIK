@@ -12,10 +12,12 @@ import {
   XMarkIcon,
   EyeIcon,
 } from "@heroicons/react/24/solid";
+import { useToast } from "../components/Toast";
 
 export default function Asets() {
   const [asets, setAsets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast, showConfirm } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
@@ -75,15 +77,15 @@ export default function Asets() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus aset ini?")) return;
-
-    fetch(`http://127.0.0.1:8000/api/asets/${id}`, { method: "DELETE" })
-      .then((res) => res.json())
-      .then((result) => {
-        alert(result.message);
-        fetchAsets();
-      })
-      .catch((err) => console.error(err));
+    showConfirm("Apakah Anda yakin ingin menghapus aset ini?", () => {
+      fetch(`http://127.0.0.1:8000/api/asets/${id}`, { method: "DELETE" })
+        .then((res) => res.json())
+        .then((result) => {
+          showToast(result.message, "success");
+          fetchAsets();
+        })
+        .catch((err) => console.error(err));
+    });
   };
 
   const openCreateModal = () => {
@@ -157,13 +159,14 @@ export default function Asets() {
 
         if (!res.ok) {
           console.error("VALIDATION ERROR:", data);
-          alert(
-            data.message || Object.values(data.errors || {}).flat().join("\n")
+          showToast(
+            data.message || Object.values(data.errors || {}).flat().join("\n"),
+            "error"
           );
           return;
         }
 
-        alert(data.message);
+        showToast(data.message, "success");
         setModalOpen(false);
         fetchAsets();
       })
@@ -191,17 +194,25 @@ export default function Asets() {
 `;
 
   const formatRupiah = (angka) => {
-    return new Intl.NumberFormat("id-ID", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(angka);
+    if (!angka) return "";
+
+    return new Intl.NumberFormat("id-ID").format(angka);
+  };
+
+  const handleRupiahChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+
+    setFormData({
+      ...formData,
+      nilai_aset: value
+    });
   };
 
   return (
     <div className="space-y-6">
       {/* ================= STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         {/* TOTAL ASET */}
         <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-transform duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
@@ -279,7 +290,7 @@ export default function Asets() {
             <button
               onClick={openCreateModal}
               className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-lg 
+                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -377,22 +388,20 @@ export default function Asets() {
                     </td>
                     <td className="px-4 py-3 text-sm text-center">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          aset.status_inventaris === "INTRA"
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${aset.status_inventaris === "INTRA"
                             ? "bg-purple-300 text-purple-900"
                             : "bg-orange-300 text-orange-900"
-                        }`}
+                          }`}
                       >
                         {aset.status_inventaris}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          aset.status.toLowerCase() === "aktif"
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${aset.status.toLowerCase() === "aktif"
                             ? "bg-lime-300 text-lime-900"
                             : "bg-red-300 text-red-900"
-                        }`}
+                          }`}
                       >
                         {aset.status}
                       </span>
@@ -402,7 +411,7 @@ export default function Asets() {
                         {/* DETAIL */}
                         <button
                           onClick={() => openDetailModal(aset)}
-                          className="p-2 rounded-lg border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition"
+                          className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition"
                           title="Lihat Detail"
                         >
                           <EyeIcon className="w-4 h-4" />
@@ -465,105 +474,99 @@ export default function Asets() {
 
       {/* ================= MODAL DETAIL ================= */}
       {detailOpen && selectedAset && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="w-full max-w-lg bg-[#0f172a]/60 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl relative">
-            <button
-              onClick={() => setDetailOpen(false)}
-              className="absolute top-3 right-3 p-2 rounded-full text-white transition-all duration-200 hover:bg-red-500/30 active:scale-95"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-2xl bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden max-h-[90vh] overflow-y-auto scrollbar-hide">
+            {/* Decorative gradient orbs */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/15 rounded-full blur-3xl"></div>
 
-            <h2 className="text-xl font-bold text-white mb-6">Detail Aset</h2>
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border-b border-white/10 px-8 py-5">
+              <button
+                onClick={() => setDetailOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full text-white/70 transition-all duration-200 hover:bg-red-500/30 hover:text-white active:scale-95"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/20">
+                  <ArchiveBoxIcon className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Detail Aset</h2>
+                  <p className="text-xs text-white/50 mt-0.5">{selectedAset.kode_aset}</p>
+                </div>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-white/90">
-              {/* FOTO ASET */}
-              <div className="flex items-stretch">
-                {selectedAset.foto_aset ? (
-                  <img
-                    src={`http://127.0.0.1:8000/storage/${selectedAset.foto_aset}`}
-                    alt="Foto Aset"
-                    className="w-full h-full object-cover rounded-xl border border-white/20"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white/10 rounded-xl text-white/60 text-sm">Foto tidak tersedia</div>';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-white/10 rounded-xl">
-                    Tidak ada foto
+            {/* Body */}
+            <div className="p-8 space-y-5 relative">
+              {/* Foto Aset */}
+              <div className="flex justify-center">
+                <div className="w-36 h-36 rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                  {selectedAset.foto_aset ? (
+                    <img
+                      src={`http://127.0.0.1:8000/storage/${selectedAset.foto_aset}`}
+                      alt="Foto Aset"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white/40 text-xs">Foto tidak tersedia</div>';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/40 text-xs">Tidak ada foto</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Cards */}
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Kode Aset", value: selectedAset.kode_aset, color: "blue" },
+                  { label: "Nama Aset", value: selectedAset.nama_aset, color: "indigo" },
+                  { label: "Jenis Aset", value: selectedAset.jenis_aset, color: "purple" },
+                  { label: "Kondisi", value: selectedAset.kondisi, color: "lime" },
+                  { label: "Nilai Aset", value: `Rp ${formatRupiah(selectedAset.nilai_aset)}`, color: "yellow" },
+                  { label: "Lokasi", value: selectedAset.lokasi?.nama_lokasi || "-", color: "cyan" },
+                  { label: "RFID Tag", value: selectedAset.rfid_tag || "-", color: "teal" },
+                  { label: "Tanggal Masuk", value: new Date(selectedAset.tanggal_masuk).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }), color: "orange" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className={`bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-${item.color}-500/50`}
+                  >
+                    <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">{item.label}</p>
+                    <p className="text-white font-semibold text-sm mt-1">{item.value}</p>
                   </div>
-                )}
+                ))}
               </div>
 
-              {/* DESKRIPSI KIRI */}
-              <div className="space-y-3">
-                <p>
-                  <b>Kode Aset:</b>
-                  <br />
-                  {selectedAset.kode_aset}
-                </p>
-                <p>
-                  <b>Nama Aset:</b>
-                  <br />
-                  {selectedAset.nama_aset}
-                </p>
-                <p>
-                  <b>Jenis Aset:</b>
-                  <br />
-                  {selectedAset.jenis_aset}
-                </p>
-                <p>
-                  <b>Kondisi:</b>
-                  <br />
-                  {selectedAset.kondisi}
-                </p>
-                <p>
-                  <b>Nilai Aset:</b>
-                  <br />
-                  Rp {formatRupiah(selectedAset.nilai_aset)}
-                </p>
+              {/* Detail Aset (full width) */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-violet-500/50">
+                <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Detail Aset</p>
+                <p className="text-white/90 text-sm mt-1 leading-relaxed">{selectedAset.detail_aset || "-"}</p>
               </div>
 
-              {/* DESKRIPSI KANAN */}
-              <div className="space-y-3">
-                <p>
-                  <b>Lokasi:</b>
-                  <br />
-                  {selectedAset.lokasi?.nama_lokasi || "-"}
-                </p>
-                <p>
-                  <b>Status:</b>
-                  <br />
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                      selectedAset.status === "Aktif"
-                        ? "bg-lime-300 text-lime-900"
-                        : "bg-red-300 text-red-900"
-                    }`}
-                  >
-                    {selectedAset.status}
-                  </span>
-                </p>
-                <p>
-                  <b>Status Inventaris:</b>
-                  <br />
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                      selectedAset.status_inventaris === "INTRA"
-                        ? "bg-purple-300 text-purple-900"
-                        : "bg-orange-300 text-orange-900"
-                    }`}
-                  >
-                    {selectedAset.status_inventaris}
-                  </span>
-                </p>
-                <p>
-                  <b>Tanggal Masuk:</b>
-                  <br />
-                  {new Date(selectedAset.tanggal_masuk).toLocaleDateString()}
-                </p>
+              {/* Status badges */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-lime-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Status</p>
+                  <div className="mt-1.5">
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${selectedAset.status === "Aktif" ? "bg-lime-500/20 text-lime-400" : "bg-red-500/20 text-red-400"}`}>
+                      {selectedAset.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 hover:bg-white/[0.08] transition-colors duration-200 border-l-2 border-l-purple-500/50">
+                  <p className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Status Inventaris</p>
+                  <div className="mt-1.5">
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${selectedAset.status_inventaris === "INTRA" ? "bg-purple-500/20 text-purple-400" : "bg-orange-500/20 text-orange-400"}`}>
+                      {selectedAset.status_inventaris}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -647,14 +650,20 @@ export default function Asets() {
               {/* NILAI ASET */}
               <div>
                 <label className="text-white/80 text-sm">Nilai Aset</label>
-                <input
-                  type="number"
-                  name="nilai_aset"
-                  value={formData.nilai_aset}
-                  onChange={handleChange}
-                  required
-                  className={inputGlass}
-                />
+
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80">
+                    Rp
+                  </span>
+
+                  <input
+                    type="text"
+                    name="nilai_aset"
+                    value={formatRupiah(formData.nilai_aset)}
+                    onChange={handleRupiahChange}
+                    className={`${inputGlass} pl-10`}
+                  />
+                </div>
               </div>
 
               {/* LOKASI */}
@@ -755,7 +764,7 @@ export default function Asets() {
               {/* BUTTON */}
               <button
                 type="submit"
-                className="w-full py-2 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold rounded-lg transition"
+                className="w-full py-2 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg transition"
               >
                 {isEdit ? "Update Aset" : "Tambah Aset"}
               </button>
