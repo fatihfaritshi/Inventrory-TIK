@@ -13,6 +13,7 @@ import {
     WrenchScrewdriverIcon,
     DocumentChartBarIcon,
     PrinterIcon,
+    XMarkIcon,
 } from "@heroicons/react/24/solid";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -34,6 +35,13 @@ export default function Laporan() {
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const { showToast } = useToast();
+
+    // Per-tab filters
+    const [filterRole, setFilterRole] = useState("Semua");
+    const [filterKondisi, setFilterKondisi] = useState("Semua");
+    const [filterStatusAset, setFilterStatusAset] = useState("Semua");
+    const [filterPrioritas, setFilterPrioritas] = useState("Semua");
+    const [filterStatusPemeliharaan, setFilterStatusPemeliharaan] = useState("Semua");
 
     // Data states
     const [users, setUsers] = useState([]);
@@ -113,165 +121,84 @@ export default function Laporan() {
         return tglSelesai > today ? "Berlangsung" : "Selesai";
     };
 
+    // ==================== RESET FILTERS ====================
+    const resetFilters = () => {
+        setSearch("");
+        setFilterRole("Semua");
+        setFilterKondisi("Semua");
+        setFilterStatusAset("Semua");
+        setFilterPrioritas("Semua");
+        setFilterStatusPemeliharaan("Semua");
+    };
+
     // ==================== TABLE DEFINITIONS ====================
     const tableConfig = {
         user: {
             title: "Laporan Data User",
-            columns: ["No", "Username", "Nama", "Role"],
+            columns: ["No", "Username", "Nama", "Role", "Dibuat"],
             getData: () => {
                 const keyword = search.toLowerCase();
-                return users.filter(
-                    (u) =>
-                        u.nama?.toLowerCase().includes(keyword) ||
-                        u.username?.toLowerCase().includes(keyword) ||
-                        u.role?.toLowerCase().includes(keyword)
-                );
+                return users.filter((u) => {
+                    const matchSearch = u.nama?.toLowerCase().includes(keyword) || u.username?.toLowerCase().includes(keyword) || u.role?.toLowerCase().includes(keyword);
+                    const matchRole = filterRole === "Semua" || u.role === filterRole;
+                    return matchSearch && matchRole;
+                });
             },
-            renderRow: (item, index) => [
-                index + 1,
-                item.username,
-                item.nama,
-                item.role,
-            ],
-            exportRow: (item, index) => ({
-                No: index + 1,
-                Username: item.username,
-                Nama: item.nama,
-                Role: item.role,
-            }),
+            renderRow: (item, index) => [index + 1, item.username, item.nama, item.role, formatTanggal(item.created_at)],
+            exportRow: (item, index) => ({ No: index + 1, Username: item.username, Nama: item.nama, Role: item.role, Dibuat: formatTanggal(item.created_at) }),
         },
         aset: {
             title: "Laporan Data Aset",
-            columns: ["No", "Kode Aset", "Nama Aset", "Jenis", "Kondisi", "Nilai Aset", "Lokasi", "Status", "Tgl Masuk"],
+            columns: ["No", "Kode Aset", "Nama Aset", "Jenis", "Detail", "Kondisi", "Nilai Aset", "Lokasi", "RFID Tag", "Status", "Inventaris", "Tgl Masuk"],
             getData: () => {
                 const keyword = search.toLowerCase();
-                return asets.filter(
-                    (a) =>
-                        a.nama_aset?.toLowerCase().includes(keyword) ||
-                        a.kode_aset?.toLowerCase().includes(keyword) ||
-                        a.jenis_aset?.toLowerCase().includes(keyword) ||
-                        a.lokasi?.nama_lokasi?.toLowerCase().includes(keyword)
-                );
+                return asets.filter((a) => {
+                    const matchSearch = a.nama_aset?.toLowerCase().includes(keyword) || a.kode_aset?.toLowerCase().includes(keyword) || a.jenis_aset?.toLowerCase().includes(keyword) || a.lokasi?.nama_lokasi?.toLowerCase().includes(keyword);
+                    const matchKondisi = filterKondisi === "Semua" || a.kondisi === filterKondisi;
+                    const matchStatus = filterStatusAset === "Semua" || a.status === filterStatusAset;
+                    return matchSearch && matchKondisi && matchStatus;
+                });
             },
-            renderRow: (item, index) => [
-                index + 1,
-                item.kode_aset,
-                item.nama_aset,
-                item.jenis_aset,
-                item.kondisi,
-                formatRupiah(item.nilai_aset),
-                item.lokasi?.nama_lokasi || "-",
-                item.status,
-                formatTanggal(item.tanggal_masuk),
-            ],
-            exportRow: (item, index) => ({
-                No: index + 1,
-                "Kode Aset": item.kode_aset,
-                "Nama Aset": item.nama_aset,
-                Jenis: item.jenis_aset,
-                Kondisi: item.kondisi,
-                "Nilai Aset": item.nilai_aset,
-                Lokasi: item.lokasi?.nama_lokasi || "-",
-                Status: item.status,
-                "Tgl Masuk": formatTanggal(item.tanggal_masuk),
-            }),
+            renderRow: (item, index) => [index + 1, item.kode_aset, item.nama_aset, item.jenis_aset, item.detail_aset || "-", item.kondisi, formatRupiah(item.nilai_aset), item.lokasi?.nama_lokasi || "-", item.rfid_tag || "-", item.status, item.status_inventaris || "-", formatTanggal(item.tanggal_masuk)],
+            exportRow: (item, index) => ({ No: index + 1, "Kode Aset": item.kode_aset, "Nama Aset": item.nama_aset, Jenis: item.jenis_aset, Detail: item.detail_aset || "-", Kondisi: item.kondisi, "Nilai Aset": item.nilai_aset, Lokasi: item.lokasi?.nama_lokasi || "-", "RFID Tag": item.rfid_tag || "-", Status: item.status, Inventaris: item.status_inventaris || "-", "Tgl Masuk": formatTanggal(item.tanggal_masuk) }),
         },
         lokasi: {
             title: "Laporan Data Lokasi",
-            columns: ["No", "Nama Lokasi", "Deskripsi", "Jumlah Aset"],
+            columns: ["No", "Nama Lokasi", "Deskripsi", "Jumlah Aset", "Dibuat"],
             getData: () => {
                 const keyword = search.toLowerCase();
-                return lokasis.filter((l) =>
-                    l.nama_lokasi?.toLowerCase().includes(keyword)
-                );
+                return lokasis.filter((l) => l.nama_lokasi?.toLowerCase().includes(keyword) || l.deskripsi?.toLowerCase().includes(keyword));
             },
-            renderRow: (item, index) => [
-                index + 1,
-                item.nama_lokasi,
-                item.deskripsi || "-",
-                item.asets_count ?? 0,
-            ],
-            exportRow: (item, index) => ({
-                No: index + 1,
-                "Nama Lokasi": item.nama_lokasi,
-                Deskripsi: item.deskripsi || "-",
-                "Jumlah Aset": item.asets_count ?? 0,
-            }),
+            renderRow: (item, index) => [index + 1, item.nama_lokasi, item.deskripsi || "-", item.asets_count ?? 0, formatTanggal(item.created_at)],
+            exportRow: (item, index) => ({ No: index + 1, "Nama Lokasi": item.nama_lokasi, Deskripsi: item.deskripsi || "-", "Jumlah Aset": item.asets_count ?? 0, Dibuat: formatTanggal(item.created_at) }),
         },
         penilaian: {
             title: "Laporan Data Penilaian",
-            columns: ["No", "Kode Aset", "Nama Aset", "Kondisi Fisik", "Usia Pemakaian", "Frekuensi", "Urgensi", "Total Nilai", "Prioritas", "Penilai", "Tanggal"],
+            columns: ["No", "Kode Aset", "Nama Aset", "Kondisi Fisik", "Usia Pemakaian", "Frekuensi", "Nilai Ekonomis", "Biaya Pemeliharaan", "Urgensi", "Total Nilai", "Prioritas", "Penilai", "Tanggal"],
             getData: () => {
                 const keyword = search.toLowerCase();
-                return penilaians.filter(
-                    (p) =>
-                        p.aset?.nama_aset?.toLowerCase().includes(keyword) ||
-                        p.aset?.kode_aset?.toLowerCase().includes(keyword) ||
-                        p.user?.username?.toLowerCase().includes(keyword)
-                );
+                return penilaians.filter((p) => {
+                    const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword) || p.user?.username?.toLowerCase().includes(keyword);
+                    const matchPrioritas = filterPrioritas === "Semua" || getPrioritas(p.total_nilai) === filterPrioritas;
+                    return matchSearch && matchPrioritas;
+                });
             },
-            renderRow: (item, index) => [
-                index + 1,
-                item.aset?.kode_aset || "-",
-                item.aset?.nama_aset || "-",
-                item.kondisi_penilaian || "-",
-                item.usia_pemakaian_aset || "-",
-                item.frekuensi_penggunaan || "-",
-                item.tingkat_urgensi || "-",
-                item.total_nilai,
-                getPrioritas(item.total_nilai),
-                item.user?.username || "-",
-                formatTanggal(item.created_at),
-            ],
-            exportRow: (item, index) => ({
-                No: index + 1,
-                "Kode Aset": item.aset?.kode_aset || "-",
-                "Nama Aset": item.aset?.nama_aset || "-",
-                "Kondisi Fisik": item.kondisi_penilaian || "-",
-                "Usia Pemakaian": item.usia_pemakaian_aset || "-",
-                Frekuensi: item.frekuensi_penggunaan || "-",
-                Urgensi: item.tingkat_urgensi || "-",
-                "Total Nilai": item.total_nilai,
-                Prioritas: getPrioritas(item.total_nilai),
-                Penilai: item.user?.username || "-",
-                Tanggal: formatTanggal(item.created_at),
-            }),
+            renderRow: (item, index) => [index + 1, item.aset?.kode_aset || "-", item.aset?.nama_aset || "-", item.kondisi_penilaian || "-", item.usia_pemakaian_aset || "-", item.frekuensi_penggunaan || "-", item.nilai_ekonomis || "-", item.biaya_pemeliharaan || "-", item.tingkat_urgensi || "-", item.total_nilai, getPrioritas(item.total_nilai), item.user?.username || "-", formatTanggal(item.created_at)],
+            exportRow: (item, index) => ({ No: index + 1, "Kode Aset": item.aset?.kode_aset || "-", "Nama Aset": item.aset?.nama_aset || "-", "Kondisi Fisik": item.kondisi_penilaian || "-", "Usia Pemakaian": item.usia_pemakaian_aset || "-", Frekuensi: item.frekuensi_penggunaan || "-", "Nilai Ekonomis": item.nilai_ekonomis || "-", "Biaya Pemeliharaan": item.biaya_pemeliharaan || "-", Urgensi: item.tingkat_urgensi || "-", "Total Nilai": item.total_nilai, Prioritas: getPrioritas(item.total_nilai), Penilai: item.user?.username || "-", Tanggal: formatTanggal(item.created_at) }),
         },
         pemeliharaan: {
             title: "Laporan Data Pemeliharaan",
             columns: ["No", "Kode Aset", "Nama Aset", "Deskripsi", "Biaya", "Tgl Mulai", "Tgl Selesai", "Diinput Oleh", "Status"],
             getData: () => {
                 const keyword = search.toLowerCase();
-                return pemeliharaans.filter(
-                    (p) =>
-                        p.aset?.nama_aset?.toLowerCase().includes(keyword) ||
-                        p.aset?.kode_aset?.toLowerCase().includes(keyword) ||
-                        p.deskripsi?.toLowerCase().includes(keyword) ||
-                        p.user?.username?.toLowerCase().includes(keyword)
-                );
+                return pemeliharaans.filter((p) => {
+                    const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword) || p.deskripsi?.toLowerCase().includes(keyword) || p.user?.username?.toLowerCase().includes(keyword);
+                    const matchStatus = filterStatusPemeliharaan === "Semua" || getStatusPemeliharaan(p) === filterStatusPemeliharaan;
+                    return matchSearch && matchStatus;
+                });
             },
-            renderRow: (item, index) => [
-                index + 1,
-                item.aset?.kode_aset || "-",
-                item.aset?.nama_aset || "-",
-                item.deskripsi,
-                formatRupiah(item.biaya),
-                formatTanggal(item.tanggal),
-                formatTanggal(item.tanggal_selesai),
-                item.user?.username || item.user?.nama || "-",
-                getStatusPemeliharaan(item),
-            ],
-            exportRow: (item, index) => ({
-                No: index + 1,
-                "Kode Aset": item.aset?.kode_aset || "-",
-                "Nama Aset": item.aset?.nama_aset || "-",
-                Deskripsi: item.deskripsi,
-                Biaya: item.biaya,
-                "Tgl Mulai": formatTanggal(item.tanggal),
-                "Tgl Selesai": formatTanggal(item.tanggal_selesai),
-                "Diinput Oleh": item.user?.username || item.user?.nama || "-",
-                Status: getStatusPemeliharaan(item),
-            }),
+            renderRow: (item, index) => [index + 1, item.aset?.kode_aset || "-", item.aset?.nama_aset || "-", item.deskripsi, formatRupiah(item.biaya), formatTanggal(item.tanggal), formatTanggal(item.tanggal_selesai), item.user?.username || item.user?.nama || "-", getStatusPemeliharaan(item)],
+            exportRow: (item, index) => ({ No: index + 1, "Kode Aset": item.aset?.kode_aset || "-", "Nama Aset": item.aset?.nama_aset || "-", Deskripsi: item.deskripsi, Biaya: item.biaya, "Tgl Mulai": formatTanggal(item.tanggal), "Tgl Selesai": formatTanggal(item.tanggal_selesai), "Diinput Oleh": item.user?.username || item.user?.nama || "-", Status: getStatusPemeliharaan(item) }),
         },
     };
 
@@ -415,7 +342,7 @@ export default function Laporan() {
                             key={tab.key}
                             onClick={() => {
                                 setActiveTab(tab.key);
-                                setSearch("");
+                                resetFilters();
                             }}
                             className={`relative rounded-2xl shadow-lg p-5 text-white overflow-hidden group transition-all duration-300 text-left ${isActive
                                     ? `bg-gradient-to-br ${tab.color} scale-105 ring-4 ring-white/50`
@@ -510,6 +437,52 @@ export default function Laporan() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                    {/* Per-tab filters */}
+                    <div className="flex flex-wrap items-center gap-3 mt-3">
+                        {activeTab === "user" && (
+                            <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                <option value="Semua">Semua Role</option>
+                                <option value="Administrator">Administrator</option>
+                                <option value="Petugas">Petugas</option>
+                                <option value="Pimpinan">Pimpinan</option>
+                            </select>
+                        )}
+                        {activeTab === "aset" && (
+                            <>
+                                <select value={filterKondisi} onChange={(e) => setFilterKondisi(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                    <option value="Semua">Semua Kondisi</option>
+                                    <option value="Baik">Baik</option>
+                                    <option value="Rusak Ringan">Rusak Ringan</option>
+                                    <option value="Rusak Berat">Rusak Berat</option>
+                                </select>
+                                <select value={filterStatusAset} onChange={(e) => setFilterStatusAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                    <option value="Semua">Semua Status</option>
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Non-Aktif">Non-Aktif</option>
+                                </select>
+                            </>
+                        )}
+                        {activeTab === "penilaian" && (
+                            <select value={filterPrioritas} onChange={(e) => setFilterPrioritas(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                <option value="Semua">Semua Prioritas</option>
+                                <option value="Tinggi">Tinggi (≥70)</option>
+                                <option value="Sedang">Sedang (45-69)</option>
+                                <option value="Rendah">Rendah (&lt;45)</option>
+                            </select>
+                        )}
+                        {activeTab === "pemeliharaan" && (
+                            <select value={filterStatusPemeliharaan} onChange={(e) => setFilterStatusPemeliharaan(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                <option value="Semua">Semua Status</option>
+                                <option value="Berlangsung">Berlangsung</option>
+                                <option value="Selesai">Selesai</option>
+                            </select>
+                        )}
+                        {(filterRole !== "Semua" || filterKondisi !== "Semua" || filterStatusAset !== "Semua" || filterPrioritas !== "Semua" || filterStatusPemeliharaan !== "Semua") && (
+                            <button onClick={resetFilters} className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition text-sm flex items-center gap-1">
+                                <XMarkIcon className="w-3.5 h-3.5" /> Reset
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -40,6 +40,14 @@ export default function Asets() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedAset, setSelectedAset] = useState(null);
 
+  // Filters
+  const [filterJenis, setFilterJenis] = useState("Semua");
+  const [filterKondisi, setFilterKondisi] = useState("Semua");
+  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [filterInventaris, setFilterInventaris] = useState("Semua");
+  const [filterLokasi, setFilterLokasi] = useState("Semua");
+  const [filterTanggal, setFilterTanggal] = useState("");
+
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {
     username: "Guest",
@@ -173,16 +181,33 @@ export default function Asets() {
       .catch((err) => console.error(err));
   };
 
+  const jenisOptions = [
+    "Hardware", "Server & Storage", "Jaringan (Networking)", "Keamanan Jaringan",
+    "Komunikasi & Telekomunikasi", "Output & Presentasi", "Multimedia & Surveillance",
+    "Daya & Proteksi", "Pendingin & Infrastruktur", "Aksesoris & Peripheral",
+    "Media Penyimpanan Portable", "Software", "Furniture & Mebel",
+    "Instalasi & Kelistrikan", "Keamanan Fisik & Akses", "Peralatan Kantor",
+    "Kendaraan Operasional", "Peralatan Lapangan & Operasional",
+  ];
+
+  const resetFilters = () => {
+    setSearch(""); setFilterJenis("Semua"); setFilterKondisi("Semua");
+    setFilterStatus("Semua"); setFilterInventaris("Semua");
+    setFilterLokasi("Semua"); setFilterTanggal("");
+  };
+
+  const hasActiveFilter = filterJenis !== "Semua" || filterKondisi !== "Semua" || filterStatus !== "Semua" || filterInventaris !== "Semua" || filterLokasi !== "Semua" || filterTanggal !== "";
+
   const filteredAsets = asets.filter((aset) => {
     const keyword = search.toLowerCase();
-
-    return (
-      aset.nama_aset?.toLowerCase().includes(keyword) ||
-      aset.jenis_aset?.toLowerCase().includes(keyword) ||
-      aset.detail_aset?.toLowerCase().includes(keyword) ||
-      aset.kode_aset?.toLowerCase().includes(keyword) ||
-      aset.lokasi?.nama_lokasi?.toLowerCase().includes(keyword)
-    );
+    const matchSearch = aset.nama_aset?.toLowerCase().includes(keyword) || aset.jenis_aset?.toLowerCase().includes(keyword) || aset.detail_aset?.toLowerCase().includes(keyword) || aset.kode_aset?.toLowerCase().includes(keyword) || aset.lokasi?.nama_lokasi?.toLowerCase().includes(keyword);
+    const matchJenis = filterJenis === "Semua" || aset.jenis_aset === filterJenis;
+    const matchKondisi = filterKondisi === "Semua" || aset.kondisi === filterKondisi;
+    const matchStatus = filterStatus === "Semua" || aset.status === filterStatus;
+    const matchInventaris = filterInventaris === "Semua" || aset.status_inventaris === filterInventaris;
+    const matchLokasi = filterLokasi === "Semua" || String(aset.lokasi_id) === filterLokasi;
+    const matchTanggal = !filterTanggal || aset.tanggal_masuk?.startsWith(filterTanggal);
+    return matchSearch && matchJenis && matchKondisi && matchStatus && matchInventaris && matchLokasi && matchTanggal;
   });
 
   const inputGlass = `
@@ -289,8 +314,8 @@ export default function Asets() {
             {/* Add Button */}
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
+              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-800 
+                hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -300,8 +325,72 @@ export default function Asets() {
         </div>
       </div>
 
+      {/* ================= FILTER BAR ================= */}
+      <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200">
+        <div className="flex items-center gap-2 mb-4">
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+          <h3 className="font-bold text-gray-800">Filter & Pencarian</h3>
+          {hasActiveFilter && (
+            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Filter Aktif</span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Jenis Aset</label>
+            <select value={filterJenis} onChange={(e) => setFilterJenis(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Jenis</option>
+              {jenisOptions.map((j) => <option key={j} value={j}>{j}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Kondisi</label>
+            <select value={filterKondisi} onChange={(e) => setFilterKondisi(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Kondisi</option>
+              <option value="Baik">Baik</option>
+              <option value="Rusak Ringan">Rusak Ringan</option>
+              <option value="Rusak Berat">Rusak Berat</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Status</label>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Status</option>
+              <option value="Aktif">Aktif</option>
+              <option value="Non-Aktif">Non-Aktif</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Inventaris</label>
+            <select value={filterInventaris} onChange={(e) => setFilterInventaris(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">INTRA / EXTRA</option>
+              <option value="INTRA">INTRA</option>
+              <option value="EXTRA">EXTRA</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Lokasi</label>
+            <select value={filterLokasi} onChange={(e) => setFilterLokasi(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Lokasi</option>
+              {lokasiList.map((lok) => <option key={lok.id} value={String(lok.id)}>{lok.nama_lokasi}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Tanggal Masuk</label>
+            <input type="date" value={filterTanggal} onChange={(e) => setFilterTanggal(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+          </div>
+          <div className="flex items-end">
+            <button onClick={resetFilters} className="w-full px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition text-sm flex items-center justify-center gap-1">
+              <XMarkIcon className="w-4 h-4" /> Reset
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 text-sm text-gray-600">
+          Menampilkan <span className="font-bold text-gray-800">{filteredAsets.length}</span> dari <span className="font-bold">{asets.length}</span> aset
+        </div>
+      </div>
+
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-900 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border-2 border-blue-600 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data aset...
@@ -621,12 +710,44 @@ export default function Asets() {
               {/* JENIS ASET */}
               <div>
                 <label className="text-white/80 text-sm">Jenis Aset</label>
-                <input
-                  type="text"
+                <select
                   name="jenis_aset"
                   value={formData.jenis_aset}
                   onChange={handleChange}
                   required
+                  className={inputGlass}
+                >
+                  <option value="" className="text-black">-- Pilih Jenis Aset --</option>
+                  <option className="text-black">Hardware</option>
+                  <option className="text-black">Server & Storage</option>
+                  <option className="text-black">Jaringan (Networking)</option>
+                  <option className="text-black">Keamanan Jaringan</option>
+                  <option className="text-black">Komunikasi & Telekomunikasi</option>
+                  <option className="text-black">Output & Presentasi</option>
+                  <option className="text-black">Multimedia & Surveillance</option>
+                  <option className="text-black">Daya & Proteksi</option>
+                  <option className="text-black">Pendingin & Infrastruktur</option>
+                  <option className="text-black">Aksesoris & Peripheral</option>
+                  <option className="text-black">Media Penyimpanan Portable</option>
+                  <option className="text-black">Software</option>
+                  <option className="text-black">Furniture & Mebel</option>
+                  <option className="text-black">Instalasi & Kelistrikan</option>
+                  <option className="text-black">Keamanan Fisik & Akses</option>
+                  <option className="text-black">Peralatan Kantor</option>
+                  <option className="text-black">Kendaraan Operasional</option>
+                  <option className="text-black">Peralatan Lapangan & Operasional</option>
+                </select>
+              </div>
+
+              {/* DETAIL ASET */}
+              <div>
+                <label className="text-white/80 text-sm">Detail Aset (Merk / Spesifikasi)</label>
+                <input
+                  type="text"
+                  name="detail_aset"
+                  value={formData.detail_aset}
+                  onChange={handleChange}
+                  placeholder="Contoh: Dell Latitude 5520, Core i7"
                   className={inputGlass}
                 />
               </div>

@@ -14,6 +14,7 @@ class Pemeliharaan extends Model
 
     protected $fillable = [
         'aset_id',
+        'penilaian_id',
         'user_id',
         'tanggal',
         'deskripsi',

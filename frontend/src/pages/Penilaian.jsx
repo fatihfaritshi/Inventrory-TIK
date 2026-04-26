@@ -31,6 +31,9 @@ export default function Penilaian() {
     const [search, setSearch] = useState("");
     const [filterPrioritas, setFilterPrioritas] = useState("Semua");
     const [filterTanggal, setFilterTanggal] = useState("");
+    const [filterWaktu, setFilterWaktu] = useState("Semua");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 15;
 
     const [formData, setFormData] = useState({
         aset_id: "",
@@ -161,10 +164,10 @@ export default function Penilaian() {
     };
 
     // ==================== FILTER LOGIC ====================
-    const maintainedAsetIds = new Set(pemeliharaans.map((p) => Number(p.aset_id)));
+    const maintainedPenilaianIds = new Set(pemeliharaans.filter((p) => p.penilaian_id).map((p) => Number(p.penilaian_id)));
 
-    // Tab 1: Ranking — hanya aset yang BELUM dilakukan pemeliharaan
-    const rankingPenilaians = penilaians.filter((p) => !maintainedAsetIds.has(Number(p.aset_id)));
+    // Tab 1: Ranking — hanya penilaian yang BELUM dijadwalkan pemeliharaan (berdasarkan penilaian_id)
+    const rankingPenilaians = penilaians.filter((p) => !maintainedPenilaianIds.has(Number(p.penilaian_id)));
 
     const filteredRanking = rankingPenilaians.filter((p) => {
         const keyword = search.toLowerCase();
@@ -176,12 +179,18 @@ export default function Penilaian() {
 
     const rankedPenilaians = [...filteredRanking].sort((a, b) => b.total_nilai - a.total_nilai);
 
+    // Pagination
+    const totalPages = Math.ceil(rankedPenilaians.length / ITEMS_PER_PAGE);
+    const paginatedRanking = rankedPenilaians.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
     // Tab 2: Riwayat Penilaian — SEMUA data penilaian dikelompokkan berdasarkan waktu
     const filteredRiwayatPenilaian = penilaians.filter((p) => {
         const keyword = search.toLowerCase();
         const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword) || p.user?.username?.toLowerCase().includes(keyword);
         const matchPrioritas = filterPrioritas === "Semua" || getPrioritas(p.total_nilai).label === filterPrioritas;
-        return matchSearch && matchPrioritas;
+        const matchWaktu = filterWaktu === "Semua" || getTimelineGroup(p.created_at) === filterWaktu;
+        const matchTanggal = !filterTanggal || p.created_at?.startsWith(filterTanggal);
+        return matchSearch && matchPrioritas && matchWaktu && matchTanggal;
     });
 
     const penilaianTimeline = groupByTimeline(filteredRiwayatPenilaian, "created_at");
@@ -223,7 +232,7 @@ export default function Penilaian() {
                         </h1>
                         <p className="text-sm text-gray-500 mt-1">Sistem perhitungan menggunakan metode Fuzzy-MARCOS</p>
                     </div>
-                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800" : "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"}`}>
+                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800" : "bg-gradient-to-r from-blue-500 to-blue-800 hover:from-blue-700 hover:to-blue-900"}`}>
                         {showForm ? (<><XMarkIcon className="w-5 h-5" /> Tutup Form</>) : (<><PlusIcon className="w-5 h-5" /> Tambah Penilaian</>)}
                     </button>
                 </div>
@@ -291,7 +300,7 @@ export default function Penilaian() {
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "ranking" ? "bg-white/20" : "bg-blue-100 text-blue-600"}`}>{rankingPenilaians.length}</span>
                             </div>
                         </button>
-                        <button onClick={() => { setActiveTab("riwayat"); setSearch(""); setFilterPrioritas("Semua"); }}
+                        <button onClick={() => { setActiveTab("riwayat"); setSearch(""); setFilterPrioritas("Semua"); setFilterWaktu("Semua"); setFilterTanggal(""); }}
                             className={`flex-1 py-4 px-6 font-semibold transition-all ${activeTab === "riwayat" ? "bg-blue-500 text-white border-b-4 border-blue-700" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}>
                             <div className="flex items-center justify-center gap-2">
                                 <ClockIcon className="w-5 h-5" /> Riwayat Penilaian
@@ -309,12 +318,12 @@ export default function Penilaian() {
                             <label className="text-xs text-gray-600 mb-1 block">Cari Aset / Penilai</label>
                             <div className="relative">
                                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input type="text" placeholder="Ketik untuk mencari..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
+                                <input type="text" placeholder="Ketik untuk mencari..." value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
                             </div>
                         </div>
                         <div>
                             <label className="text-xs text-gray-600 mb-1 block">Filter Prioritas</label>
-                            <select value={filterPrioritas} onChange={(e) => setFilterPrioritas(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+                            <select value={filterPrioritas} onChange={(e) => { setFilterPrioritas(e.target.value); setCurrentPage(1); }} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
                                 <option value="Semua">Semua Prioritas</option>
                                 <option value="Tinggi">Tinggi (≥70)</option>
                                 <option value="Sedang">Sedang (45-69)</option>
@@ -327,12 +336,53 @@ export default function Penilaian() {
                                 <input type="date" value={filterTanggal} onChange={(e) => setFilterTanggal(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
                             </div>
                         )}
+                        {activeTab === "riwayat" && (
+                            <div>
+                                <label className="text-xs text-gray-600 mb-1 block">Filter Tanggal</label>
+                                <input type="date" value={filterTanggal} onChange={(e) => { setFilterTanggal(e.target.value); setFilterWaktu("Semua"); }} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
+                            </div>
+                        )}
                         <div className="flex items-end">
-                            <button onClick={() => { setSearch(""); setFilterPrioritas("Semua"); setFilterTanggal(""); }} className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition flex items-center justify-center gap-2">
+                            <button onClick={() => { setSearch(""); setFilterPrioritas("Semua"); setFilterTanggal(""); setFilterWaktu("Semua"); }} className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition flex items-center justify-center gap-2">
                                 <XMarkIcon className="w-4 h-4" /> Reset Filter
                             </button>
                         </div>
                     </div>
+                    {/* Quick Time Filter - only on riwayat tab */}
+                    {activeTab === "riwayat" && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {["Semua", "Hari Ini", "Kemarin", "Minggu Ini", "Bulan Ini", "Bulan Lalu", "Lebih Lama"].map((waktu) => {
+                                const isActive = filterWaktu === waktu;
+                                const colors = {
+                                    "Semua": "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300",
+                                    "Hari Ini": "bg-green-50 text-green-700 hover:bg-green-100 border-green-300",
+                                    "Kemarin": "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-300",
+                                    "Minggu Ini": "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-300",
+                                    "Bulan Ini": "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-300",
+                                    "Bulan Lalu": "bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-300",
+                                    "Lebih Lama": "bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-300",
+                                };
+                                const activeColors = {
+                                    "Semua": "bg-gray-700 text-white border-gray-700",
+                                    "Hari Ini": "bg-green-600 text-white border-green-600",
+                                    "Kemarin": "bg-blue-600 text-white border-blue-600",
+                                    "Minggu Ini": "bg-indigo-600 text-white border-indigo-600",
+                                    "Bulan Ini": "bg-yellow-500 text-white border-yellow-500",
+                                    "Bulan Lalu": "bg-orange-500 text-white border-orange-500",
+                                    "Lebih Lama": "bg-gray-500 text-white border-gray-500",
+                                };
+                                return (
+                                    <button
+                                        key={waktu}
+                                        onClick={() => { setFilterWaktu(waktu); setFilterTanggal(""); }}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${isActive ? activeColors[waktu] : colors[waktu]}`}
+                                    >
+                                        {waktu === "Semua" ? "📋 Semua" : `${timelineConfig[waktu]?.icon || ""} ${waktu}`}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="mt-3 text-sm text-gray-600">
                         Menampilkan <span className="font-bold">{activeTab === "ranking" ? rankedPenilaians.length : filteredRiwayatPenilaian.length}</span> dari <span className="font-bold">{activeTab === "ranking" ? rankingPenilaians.length : penilaians.length}</span> data
                     </div>
@@ -362,19 +412,20 @@ export default function Penilaian() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 bg-white">
-                                        {rankedPenilaians.map((penilaian, index) => {
+                                        {paginatedRanking.map((penilaian, index) => {
+                                            const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
                                             const prioritas = getPrioritas(penilaian.total_nilai);
                                             return (
                                                 <tr key={penilaian.penilaian_id} className="hover:bg-gray-50 transition-colors">
                                                     <td className="px-4 py-4 text-center">
-                                                        <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${index === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : index === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : index === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{index + 1}</span>
+                                                        <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${globalIndex === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : globalIndex === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : globalIndex === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{globalIndex + 1}</span>
                                                     </td>
                                                     <td className="px-4 py-4 text-sm font-mono font-semibold text-gray-700">{penilaian.aset?.kode_aset || "-"}</td>
                                                     <td className="px-4 py-4 text-sm text-gray-700 font-medium">{penilaian.aset?.nama_aset || "-"}</td>
                                                     <td className="px-4 py-4 text-center">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span className="text-2xl font-bold text-gray-800">{penilaian.total_nilai}</span>
-                                                            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{width: `${Math.min(penilaian.total_nilai, 100)}%`}}></div></div>
+                                                            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{ width: `${Math.min(penilaian.total_nilai, 100)}%` }}></div></div>
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-4 text-center">
@@ -404,6 +455,24 @@ export default function Penilaian() {
                                     </tbody>
                                 </table>
                             </div>
+                            {/* PAGINATION */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                                    <p className="text-sm text-gray-600">Halaman <span className="font-bold">{currentPage}</span> dari <span className="font-bold">{totalPages}</span> <span className="text-gray-400">({rankedPenilaians.length} data)</span></p>
+                                    <div className="flex items-center gap-1">
+                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">«</button>
+                                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">‹ Prev</button>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2).map((page, idx, arr) => (
+                                            <span key={page}>
+                                                {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-1 text-gray-400">...</span>}
+                                                <button onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 text-sm rounded-lg border transition ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md" : "border-gray-300 hover:bg-gray-100"}`}>{page}</button>
+                                            </span>
+                                        ))}
+                                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Next ›</button>
+                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">»</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         /* ==================== TAB 2: RIWAYAT PENILAIAN ==================== */

@@ -24,6 +24,7 @@ export default function User() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const { showToast, showConfirm } = useToast();
+  const [filterRole, setFilterRole] = useState("Semua");
 
   const [formData, setFormData] = useState({
     id: null,
@@ -119,12 +120,12 @@ export default function User() {
   };
 
   // 🔍 SEARCH FILTER
-  const filteredUsers = users.filter(
-    (user) =>
-      user.nama.toLowerCase().includes(search.toLowerCase()) ||
-      user.username.toLowerCase().includes(search.toLowerCase()) ||
-      user.role.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const keyword = search.toLowerCase();
+    const matchSearch = user.nama.toLowerCase().includes(keyword) || user.username.toLowerCase().includes(keyword) || user.role.toLowerCase().includes(keyword);
+    const matchRole = filterRole === "Semua" || user.role === filterRole;
+    return matchSearch && matchRole;
+  });
 
   const inputClass = `
     w-full
@@ -219,8 +220,8 @@ export default function User() {
             {/* Add Button */}
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
+              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-800 
+                hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -230,8 +231,45 @@ export default function User() {
         </div>
       </div>
 
+      {/* ================= FILTER BAR ================= */}
+      <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200">
+        <div className="flex items-center gap-2 mb-4">
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+          <h3 className="font-bold text-gray-800">Filter & Pencarian</h3>
+          {filterRole !== "Semua" && (
+            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Filter Aktif</span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Cari User</label>
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Ketik nama, username..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Filter Role</label>
+            <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Role</option>
+              <option value="Administrator">Administrator</option>
+              <option value="Petugas">Petugas</option>
+              <option value="Pimpinan">Pimpinan</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button onClick={() => { setSearch(""); setFilterRole("Semua"); }} className="w-full px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition text-sm flex items-center justify-center gap-1">
+              <XMarkIcon className="w-4 h-4" /> Reset Filter
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 text-sm text-gray-600">
+          Menampilkan <span className="font-bold text-gray-800">{filteredUsers.length}</span> dari <span className="font-bold">{users.length}</span> user
+        </div>
+      </div>
+
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-blue-900 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border-2 border-blue-600 overflow-x-auto">
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data user...

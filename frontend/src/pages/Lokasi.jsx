@@ -28,6 +28,7 @@ export default function Lokasi() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedLokasi, setSelectedLokasi] = useState(null);
   const { showToast, showConfirm } = useToast();
+  const [filterAset, setFilterAset] = useState("Semua");
 
   useEffect(() => {
     fetchLokasis();
@@ -106,9 +107,13 @@ export default function Lokasi() {
   };
 
   // 🔍 FILTER SEARCH
-  const filteredLokasis = lokasis.filter((lokasi) =>
-    lokasi.nama_lokasi.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredLokasis = lokasis.filter((lokasi) => {
+    const keyword = search.toLowerCase();
+    const matchSearch = lokasi.nama_lokasi.toLowerCase().includes(keyword) || lokasi.deskripsi?.toLowerCase().includes(keyword);
+    const count = lokasi.asets_count ?? 0;
+    const matchAset = filterAset === "Semua" || (filterAset === "Beraset" && count > 0) || (filterAset === "Kosong" && count === 0);
+    return matchSearch && matchAset;
+  });
 
   return (
     <div className="space-y-6">
@@ -190,8 +195,8 @@ export default function Lokasi() {
             {/* Add Button */}
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-700
-                hover:from-blue-600 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg 
+              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-800
+                hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg 
                 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
             >
               <PlusIcon className="w-5 h-5" />
@@ -201,8 +206,44 @@ export default function Lokasi() {
         </div>
       </div>
 
+      {/* ================= FILTER BAR ================= */}
+      <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200">
+        <div className="flex items-center gap-2 mb-4">
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+          <h3 className="font-bold text-gray-800">Filter & Pencarian</h3>
+          {filterAset !== "Semua" && (
+            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Filter Aktif</span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Cari Lokasi</label>
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Ketik nama lokasi..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Status Aset</label>
+            <select value={filterAset} onChange={(e) => setFilterAset(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+              <option value="Semua">Semua Lokasi</option>
+              <option value="Beraset">Lokasi Beraset</option>
+              <option value="Kosong">Lokasi Kosong</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button onClick={() => { setSearch(""); setFilterAset("Semua"); }} className="w-full px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition text-sm flex items-center justify-center gap-1">
+              <XMarkIcon className="w-4 h-4" /> Reset Filter
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 text-sm text-gray-600">
+          Menampilkan <span className="font-bold text-gray-800">{filteredLokasis.length}</span> dari <span className="font-bold">{lokasis.length}</span> lokasi
+        </div>
+      </div>
+
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl p-6 shadow-2xl border border-blue-600 overflow-hidden">
+      <div className="bg-white rounded-2xl p-6 shadow-2xl border-2 border-blue-600 overflow-hidden">
         {loading ? (
           <div className="text-center py-10">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>

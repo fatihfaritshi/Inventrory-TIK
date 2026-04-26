@@ -8,6 +8,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PemeliharaanController;
+use App\Http\Controllers\RiwayatScanController;
 
 // routes/api.php
 
@@ -33,5 +34,6 @@ Route::apiResource('pemeliharaans', PemeliharaanController::class);
 Route::apiResource('asets', AsetController::class);
 Route::apiResource('users', UsersController::class);
 Route::apiResource('lokasis', LokasiController::class);
+Route::apiResource('riwayat-scans', RiwayatScanController::class);
 
 

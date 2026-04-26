@@ -9,6 +9,7 @@ import Lokasi from "./pages/Lokasi";
 import Aset from "./pages/Aset";
 import User from "./pages/User";
 import Pemeliharaan from "./pages/Pemeliharaan";
+import RiwayatScan from "./pages/RiwayatScan";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user")) || { role: "Administrator" };
@@ -29,6 +30,7 @@ function App() {
             <Route path="/laporan" element={<Laporan />} />
             <Route path="/pemeliharaan" element={<Pemeliharaan />} />
             <Route path="/penilaian" element={<Penilaian />} />
+            <Route path="/riwayat-scan" element={<RiwayatScan />} />
           </Route>
         </Routes>
       </BrowserRouter>

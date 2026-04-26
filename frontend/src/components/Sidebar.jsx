@@ -7,6 +7,8 @@ import {
   ClipboardDocumentCheckIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
+  SignalIcon,
+  QrCodeIcon,
 } from "@heroicons/react/24/outline";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 
@@ -17,6 +19,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
       { name: "Kelola User", path: "/user", icon: UsersIcon },
       { name: "Kelola Lokasi", path: "/lokasi", icon: MapPinIcon },
       { name: "Kelola Aset", path: "/aset", icon: ArchiveBoxIcon },
+      { name: "Scan RFID", path: "/riwayat-scan", icon: SignalIcon },
       { name: "Penilaian Aset", path: "/penilaian", icon: ClipboardDocumentCheckIcon },
       { name: "Pemeliharaan", path: "/pemeliharaan", icon: WrenchScrewdriverIcon },
       { name: "Laporan", path: "/laporan", icon: DocumentChartBarIcon },
@@ -24,6 +27,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
     Petugas: [
       { name: "Dashboard", path: "/dashboard", icon: Squares2X2Icon },
       { name: "Data Aset", path: "/aset", icon: ArchiveBoxIcon },
+      { name: "Scan RFID", path: "/riwayat-scan", icon: SignalIcon },
       { name: "Penilaian Aset", path: "/penilaian", icon: ClipboardDocumentCheckIcon },
     ],
     Pimpinan: [

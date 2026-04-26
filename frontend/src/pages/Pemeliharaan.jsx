@@ -35,9 +35,12 @@ export default function Pemeliharaan() {
     const [filterPrioritas, setFilterPrioritas] = useState("Semua");
     const [filterTanggal, setFilterTanggal] = useState("");
     const [biayaDisplay, setBiayaDisplay] = useState("");
+    const [filterWaktu, setFilterWaktu] = useState("Semua");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 15;
 
     const [formData, setFormData] = useState({
-        aset_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "",
+        aset_id: "", penilaian_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "",
     });
 
     useEffect(() => { fetchAllData(); fetchAsets(); }, []);
@@ -53,8 +56,8 @@ export default function Pemeliharaan() {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [prioritasRes, pemeliharaanRes, statistikRes] = await Promise.all([
-                fetch("http://127.0.0.1:8000/api/pemeliharaans/prioritas"),
+            const [penilaianRes, pemeliharaanRes, statistikRes] = await Promise.all([
+                fetch("http://127.0.0.1:8000/api/penilaians"),
                 fetch("http://127.0.0.1:8000/api/pemeliharaans"),
                 fetch("http://127.0.0.1:8000/api/pemeliharaans/statistik"),
             ]);
@@ -62,12 +65,12 @@ export default function Pemeliharaan() {
                 if (!res.ok) { const text = await res.text(); throw new Error(`${label} gagal: HTTP ${res.status}`); }
                 return res.json();
             };
-            const [prioritasData, pemeliharaanData, statistikData] = await Promise.all([
-                checkResponse(prioritasRes, 'prioritas'),
+            const [penilaianData, pemeliharaanData, statistikData] = await Promise.all([
+                checkResponse(penilaianRes, 'penilaian'),
                 checkResponse(pemeliharaanRes, 'pemeliharaan'),
                 checkResponse(statistikRes, 'statistik'),
             ]);
-            setPenilaians(prioritasData.data || []);
+            setPenilaians(penilaianData.data || []);
             setPemeliharaans(pemeliharaanData.data || []);
             setStatistik(statistikData || {});
         } catch (err) {
@@ -134,8 +137,8 @@ export default function Pemeliharaan() {
     // ==================== FORM HANDLERS ====================
     const handleChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
     const resetForm = () => {
-        setFormData({ aset_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "" });
-        setBiayaDisplay(""); 
+        setFormData({ aset_id: "", penilaian_id: "", tanggal: "", deskripsi: "", biaya: "", tanggal_selesai: "" });
+        setBiayaDisplay("");
     };
 
     const handleSubmit = async (e) => {
@@ -156,12 +159,13 @@ export default function Pemeliharaan() {
     const handleJadwalkanFromRanking = (penilaian) => {
         setFormData({
             aset_id: penilaian.aset_id,
+            penilaian_id: penilaian.penilaian_id || penilaian.id,
             tanggal: new Date().toISOString().split("T")[0],
-            deskripsi: `Pemeliharaan ${penilaian.status_prioritas} - ${penilaian.aset?.nama_aset}`,
+            deskripsi: `Pemeliharaan ${penilaian.status_prioritas || getPrioritas(penilaian.total_nilai).label} - ${penilaian.aset?.nama_aset}`,
             biaya: "",
             tanggal_selesai: "",
         });
-        setBiayaDisplay(""); 
+        setBiayaDisplay("");
         setShowForm(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -185,8 +189,11 @@ export default function Pemeliharaan() {
     };
 
     // ==================== FILTER LOGIC ====================
-    // Tab 1: Ranking
-    const filteredRanking = penilaians.filter((p) => {
+    // Tab 1: Ranking — filter by penilaian_id (bukan aset_id)
+    const maintainedPenilaianIds = new Set(pemeliharaans.filter((p) => p.penilaian_id).map((p) => Number(p.penilaian_id)));
+    const rankingPenilaians = penilaians.filter((p) => !maintainedPenilaianIds.has(Number(p.penilaian_id)));
+
+    const filteredRanking = rankingPenilaians.filter((p) => {
         const keyword = search.toLowerCase();
         const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword);
         const matchPrioritas = filterPrioritas === "Semua" || getPrioritas(p.total_nilai).label === filterPrioritas;
@@ -195,13 +202,19 @@ export default function Pemeliharaan() {
     });
     const rankedPenilaians = [...filteredRanking].sort((a, b) => b.total_nilai - a.total_nilai);
 
+    // Pagination
+    const totalPages = Math.ceil(rankedPenilaians.length / ITEMS_PER_PAGE);
+    const paginatedRanking = rankedPenilaians.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
     // Tab 2: Riwayat Pemeliharaan — SEMUA data pemeliharaan dikelompokkan berdasarkan waktu
     const filteredRiwayatPemeliharaan = pemeliharaans.filter((item) => {
         const keyword = search.toLowerCase();
         const matchSearch = item.aset?.nama_aset?.toLowerCase().includes(keyword) || item.aset?.kode_aset?.toLowerCase().includes(keyword);
         const status = getStatusPemeliharaan(item);
         const matchStatus = filterStatus === "Semua" || filterStatus === status;
-        return matchSearch && matchStatus;
+        const matchWaktu = filterWaktu === "Semua" || getTimelineGroup(item.tanggal) === filterWaktu;
+        const matchTanggal = !filterTanggal || item.tanggal?.startsWith(filterTanggal);
+        return matchSearch && matchStatus && matchWaktu && matchTanggal;
     });
 
     const pemeliharaanTimeline = groupByTimeline(filteredRiwayatPemeliharaan, "tanggal");
@@ -240,7 +253,7 @@ export default function Pemeliharaan() {
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><WrenchScrewdriverIcon className="w-8 h-8 text-blue-600" /> Manajemen Pemeliharaan Aset</h1>
                         <p className="text-sm text-gray-500 mt-1">Kelola jadwal dan riwayat pemeliharaan berdasarkan prioritas penilaian</p>
                     </div>
-                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700" : "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"}`}>
+                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-5 py-2 font-semibold text-white rounded-lg shadow-lg transition-all duration-300 whitespace-nowrap ${showForm ? "bg-gradient-to-r from-red-500 to-red-700" : "bg-gradient-to-r from-blue-500 to-blue-800 hover:from-blue-700 hover:to-blue-900"}`}>
                         {showForm ? (<><XMarkIcon className="w-5 h-5" /> Tutup Form</>) : (<><PlusIcon className="w-5 h-5" /> Tambah Pemeliharaan</>)}
                     </button>
                 </div>
@@ -315,7 +328,7 @@ export default function Pemeliharaan() {
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === "ranking" ? "bg-white/20" : "bg-blue-100 text-blue-600"}`}>{penilaians.length}</span>
                             </div>
                         </button>
-                        <button onClick={() => { setActiveTab("riwayat"); setSearch(""); setFilterStatus("Semua"); }}
+                        <button onClick={() => { setActiveTab("riwayat"); setSearch(""); setFilterStatus("Semua"); setFilterWaktu("Semua"); setFilterTanggal(""); }}
                             className={`flex-1 py-4 px-6 font-semibold transition-all ${activeTab === "riwayat" ? "bg-blue-500 text-white border-b-4 border-blue-700" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}>
                             <div className="flex items-center justify-center gap-2">
                                 <ClockIcon className="w-5 h-5" /> Riwayat Pemeliharaan
@@ -353,23 +366,64 @@ export default function Pemeliharaan() {
                                 </div>
                             </>
                         ) : (
-                            <div>
-                                <label className="text-xs text-gray-600 mb-1 block">Filter Status</label>
-                                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-                                    <option value="Semua">Semua Status</option>
-                                    <option value="Berlangsung">Berlangsung</option>
-                                    <option value="Selesai">Selesai</option>
-                                </select>
-                            </div>
+                            <>
+                                <div>
+                                    <label className="text-xs text-gray-600 mb-1 block">Filter Status</label>
+                                    <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+                                        <option value="Semua">Semua Status</option>
+                                        <option value="Berlangsung">Berlangsung</option>
+                                        <option value="Selesai">Selesai</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-600 mb-1 block">Filter Tanggal</label>
+                                    <input type="date" value={filterTanggal} onChange={(e) => { setFilterTanggal(e.target.value); setFilterWaktu("Semua"); }} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
+                                </div>
+                            </>
                         )}
                         <div className="flex items-end">
-                            <button onClick={() => { setSearch(""); setFilterStatus("Semua"); setFilterPrioritas("Semua"); setFilterTanggal(""); }} className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition flex items-center justify-center gap-2">
+                            <button onClick={() => { setSearch(""); setFilterStatus("Semua"); setFilterPrioritas("Semua"); setFilterTanggal(""); setFilterWaktu("Semua"); }} className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition flex items-center justify-center gap-2">
                                 <XMarkIcon className="w-4 h-4" /> Reset Filter
                             </button>
                         </div>
                     </div>
+                    {/* Quick Time Filter - only on riwayat tab */}
+                    {activeTab === "riwayat" && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {["Semua", "Hari Ini", "Kemarin", "Minggu Ini", "Bulan Ini", "Bulan Lalu", "Lebih Lama"].map((waktu) => {
+                                const isActive = filterWaktu === waktu;
+                                const colors = {
+                                    "Semua": "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300",
+                                    "Hari Ini": "bg-green-50 text-green-700 hover:bg-green-100 border-green-300",
+                                    "Kemarin": "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-300",
+                                    "Minggu Ini": "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-300",
+                                    "Bulan Ini": "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-300",
+                                    "Bulan Lalu": "bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-300",
+                                    "Lebih Lama": "bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-300",
+                                };
+                                const activeColors = {
+                                    "Semua": "bg-gray-700 text-white border-gray-700",
+                                    "Hari Ini": "bg-green-600 text-white border-green-600",
+                                    "Kemarin": "bg-blue-600 text-white border-blue-600",
+                                    "Minggu Ini": "bg-indigo-600 text-white border-indigo-600",
+                                    "Bulan Ini": "bg-yellow-500 text-white border-yellow-500",
+                                    "Bulan Lalu": "bg-orange-500 text-white border-orange-500",
+                                    "Lebih Lama": "bg-gray-500 text-white border-gray-500",
+                                };
+                                return (
+                                    <button
+                                        key={waktu}
+                                        onClick={() => { setFilterWaktu(waktu); setFilterTanggal(""); }}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${isActive ? activeColors[waktu] : colors[waktu]}`}
+                                    >
+                                        {waktu === "Semua" ? "📋 Semua" : `${timelineConfig[waktu]?.icon || ""} ${waktu}`}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="mt-3 text-sm text-gray-600">
-                        Menampilkan <span className="font-bold">{activeTab === "ranking" ? rankedPenilaians.length : filteredRiwayatPemeliharaan.length}</span> dari <span className="font-bold">{activeTab === "ranking" ? penilaians.length : pemeliharaans.length}</span> data
+                        Menampilkan <span className="font-bold">{activeTab === "ranking" ? rankedPenilaians.length : filteredRiwayatPemeliharaan.length}</span> dari <span className="font-bold">{activeTab === "ranking" ? rankingPenilaians.length : pemeliharaans.length}</span> data
                     </div>
                 </div>
 
@@ -379,6 +433,7 @@ export default function Pemeliharaan() {
                         <div className="text-center py-20"><ArrowPathIcon className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" /><p className="text-gray-600 font-medium">Loading data...</p></div>
                     ) : activeTab === "ranking" ? (
                         /* ==================== TAB 1: RANKING PRIORITAS ==================== */
+                        <div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -394,19 +449,20 @@ export default function Pemeliharaan() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                    {rankedPenilaians.map((penilaian, index) => {
+                                    {paginatedRanking.map((penilaian, index) => {
+                                        const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
                                         const prioritas = getPrioritas(penilaian.total_nilai);
                                         return (
-                                            <tr key={penilaian.id || index} className="hover:bg-gray-50 transition-colors">
+                                            <tr key={penilaian.penilaian_id || penilaian.id || index} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-4 py-4 text-center">
-                                                    <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${index === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : index === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : index === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{index + 1}</span>
+                                                    <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${globalIndex === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : globalIndex === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : globalIndex === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{globalIndex + 1}</span>
                                                 </td>
                                                 <td className="px-4 py-4 text-sm font-mono font-semibold text-gray-700">{penilaian.aset?.kode_aset || "-"}</td>
                                                 <td className="px-4 py-4 text-sm text-gray-700 font-medium">{penilaian.aset?.nama_aset || "-"}</td>
                                                 <td className="px-4 py-4 text-center">
                                                     <div className="flex flex-col items-center gap-1">
                                                         <span className="text-2xl font-bold text-gray-800">{penilaian.total_nilai}</span>
-                                                        <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{width: `${Math.min(penilaian.total_nilai, 100)}%`}}></div></div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{ width: `${Math.min(penilaian.total_nilai, 100)}%` }}></div></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
@@ -425,11 +481,30 @@ export default function Pemeliharaan() {
                                     {rankedPenilaians.length === 0 && (
                                         <tr><td colSpan={8} className="px-6 py-16 text-center text-gray-500">
                                             <ArchiveBoxIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                                            <p className="text-lg font-semibold">{penilaians.length === 0 ? "Semua aset sudah dijadwalkan pemeliharaan" : "Tidak ada data yang cocok"}</p>
+                                            <p className="text-lg font-semibold">{penilaians.length === 0 ? "Belum ada data penilaian" : "Semua penilaian sudah dijadwalkan pemeliharaan"}</p>
                                         </td></tr>
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                        {/* PAGINATION */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                                <p className="text-sm text-gray-600">Halaman <span className="font-bold">{currentPage}</span> dari <span className="font-bold">{totalPages}</span> <span className="text-gray-400">({rankedPenilaians.length} data)</span></p>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">«</button>
+                                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">‹ Prev</button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2).map((page, idx, arr) => (
+                                        <span key={page}>
+                                            {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-1 text-gray-400">...</span>}
+                                            <button onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 text-sm rounded-lg border transition ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md" : "border-gray-300 hover:bg-gray-100"}`}>{page}</button>
+                                        </span>
+                                    ))}
+                                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Next ›</button>
+                                    <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">»</button>
+                                </div>
+                            </div>
+                        )}
                         </div>
                     ) : (
                         /* ==================== TAB 2: RIWAYAT PEMELIHARAAN ==================== */
