@@ -14,6 +14,7 @@ import {
     DocumentChartBarIcon,
     PrinterIcon,
     XMarkIcon,
+    SignalIcon,
 } from "@heroicons/react/24/solid";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -27,6 +28,7 @@ const TABS = [
     { key: "lokasi", label: "Lokasi", icon: MapPinIcon, color: "from-yellow-500 to-yellow-700" },
     { key: "penilaian", label: "Penilaian", icon: ClipboardDocumentCheckIcon, color: "from-purple-500 to-purple-700" },
     { key: "pemeliharaan", label: "Pemeliharaan", icon: WrenchScrewdriverIcon, color: "from-lime-500 to-lime-700" },
+    { key: "scan", label: "Riwayat Scan", icon: SignalIcon, color: "from-cyan-500 to-cyan-700" },
 ];
 
 export default function Laporan() {
@@ -38,10 +40,29 @@ export default function Laporan() {
 
     // Per-tab filters
     const [filterRole, setFilterRole] = useState("Semua");
-    const [filterKondisi, setFilterKondisi] = useState("Semua");
+    
+    // Aset filters
+    const [filterJenisAset, setFilterJenisAset] = useState("Semua");
+    const [filterKondisiAset, setFilterKondisiAset] = useState("Semua");
     const [filterStatusAset, setFilterStatusAset] = useState("Semua");
+    const [filterInventarisAset, setFilterInventarisAset] = useState("Semua");
+    const [filterLokasiAset, setFilterLokasiAset] = useState("Semua");
+    const [filterTanggalAset, setFilterTanggalAset] = useState("");
+    
+    // Penilaian filters
     const [filterPrioritas, setFilterPrioritas] = useState("Semua");
+    const [filterTanggalPenilaian, setFilterTanggalPenilaian] = useState("");
+    const [filterWaktuPenilaian, setFilterWaktuPenilaian] = useState("Semua");
+    
+    // Pemeliharaan filters
     const [filterStatusPemeliharaan, setFilterStatusPemeliharaan] = useState("Semua");
+    const [filterTanggalPemeliharaan, setFilterTanggalPemeliharaan] = useState("");
+    const [filterWaktuPemeliharaan, setFilterWaktuPemeliharaan] = useState("Semua");
+    
+    // Scan filters
+    const [filterLokasiScan, setFilterLokasiScan] = useState("Semua");
+    const [filterTanggalScan, setFilterTanggalScan] = useState("");
+    const [filterWaktuScan, setFilterWaktuScan] = useState("Semua");
 
     // Data states
     const [users, setUsers] = useState([]);
@@ -49,6 +70,7 @@ export default function Laporan() {
     const [lokasis, setLokasis] = useState([]);
     const [penilaians, setPenilaians] = useState([]);
     const [pemeliharaans, setPemeliharaans] = useState([]);
+    const [scans, setScans] = useState([]);
 
     // ==================== FETCH DATA ====================
     useEffect(() => {
@@ -58,22 +80,24 @@ export default function Laporan() {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [userRes, asetRes, lokasiRes, penilaianRes, pemeliharaanRes] =
+            const [userRes, asetRes, lokasiRes, penilaianRes, pemeliharaanRes, scanRes] =
                 await Promise.all([
                     fetch("http://127.0.0.1:8000/api/users"),
                     fetch("http://127.0.0.1:8000/api/asets"),
                     fetch("http://127.0.0.1:8000/api/lokasis"),
                     fetch("http://127.0.0.1:8000/api/penilaians"),
                     fetch("http://127.0.0.1:8000/api/pemeliharaans"),
+                    fetch("http://127.0.0.1:8000/api/riwayat-scans"),
                 ]);
 
-            const [userData, asetData, lokasiData, penilaianData, pemeliharaanData] =
+            const [userData, asetData, lokasiData, penilaianData, pemeliharaanData, scanData] =
                 await Promise.all([
                     userRes.json(),
                     asetRes.json(),
                     lokasiRes.json(),
                     penilaianRes.json(),
                     pemeliharaanRes.json(),
+                    scanRes.json(),
                 ]);
 
             setUsers(userData.data || userData || []);
@@ -81,6 +105,7 @@ export default function Laporan() {
             setLokasis(lokasiData.data || []);
             setPenilaians(penilaianData.data || []);
             setPemeliharaans(pemeliharaanData.data || []);
+            setScans(scanData.data || []);
         } catch (err) {
             console.error("❌ Fetch error:", err);
             showToast("Gagal memuat data: " + err.message, "error");
@@ -121,14 +146,49 @@ export default function Laporan() {
         return tglSelesai > today ? "Berlangsung" : "Selesai";
     };
 
+    const getTimelineGroup = (dateStr) => {
+        if (!dateStr) return "Lebih Lama";
+        const date = new Date(dateStr);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.floor((today - itemDate) / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return "Hari Ini";
+        if (diffDays === 1) return "Kemarin";
+        if (diffDays <= 7) return "Minggu Ini";
+        if (diffDays <= 30) return "Bulan Ini";
+        if (diffDays <= 60) return "Bulan Lalu";
+        return "Lebih Lama";
+    };
+
+    const timelineConfig = {
+        "Hari Ini": { icon: "🟢", dotColor: "bg-green-500", bgColor: "bg-green-50", textColor: "text-green-700" },
+        "Kemarin": { icon: "🔵", dotColor: "bg-blue-500", bgColor: "bg-blue-50", textColor: "text-blue-700" },
+        "Minggu Ini": { icon: "🟣", dotColor: "bg-indigo-500", bgColor: "bg-indigo-50", textColor: "text-indigo-700" },
+        "Bulan Ini": { icon: "🟡", dotColor: "bg-yellow-500", bgColor: "bg-yellow-50", textColor: "text-yellow-700" },
+        "Bulan Lalu": { icon: "🟠", dotColor: "bg-orange-500", bgColor: "bg-orange-50", textColor: "text-orange-700" },
+        "Lebih Lama": { icon: "⚫", dotColor: "bg-gray-400", bgColor: "bg-gray-50", textColor: "text-gray-600" },
+    };
+
     // ==================== RESET FILTERS ====================
     const resetFilters = () => {
         setSearch("");
         setFilterRole("Semua");
-        setFilterKondisi("Semua");
+        setFilterJenisAset("Semua");
+        setFilterKondisiAset("Semua");
         setFilterStatusAset("Semua");
+        setFilterInventarisAset("Semua");
+        setFilterLokasiAset("Semua");
+        setFilterTanggalAset("");
         setFilterPrioritas("Semua");
+        setFilterTanggalPenilaian("");
+        setFilterWaktuPenilaian("Semua");
         setFilterStatusPemeliharaan("Semua");
+        setFilterTanggalPemeliharaan("");
+        setFilterWaktuPemeliharaan("Semua");
+        setFilterLokasiScan("Semua");
+        setFilterTanggalScan("");
+        setFilterWaktuScan("Semua");
     };
 
     // ==================== TABLE DEFINITIONS ====================
@@ -154,9 +214,13 @@ export default function Laporan() {
                 const keyword = search.toLowerCase();
                 return asets.filter((a) => {
                     const matchSearch = a.nama_aset?.toLowerCase().includes(keyword) || a.kode_aset?.toLowerCase().includes(keyword) || a.jenis_aset?.toLowerCase().includes(keyword) || a.lokasi?.nama_lokasi?.toLowerCase().includes(keyword);
-                    const matchKondisi = filterKondisi === "Semua" || a.kondisi === filterKondisi;
+                    const matchJenis = filterJenisAset === "Semua" || a.jenis_aset === filterJenisAset;
+                    const matchKondisi = filterKondisiAset === "Semua" || a.kondisi === filterKondisiAset;
                     const matchStatus = filterStatusAset === "Semua" || a.status === filterStatusAset;
-                    return matchSearch && matchKondisi && matchStatus;
+                    const matchInventaris = filterInventarisAset === "Semua" || a.status_inventaris === filterInventarisAset;
+                    const matchLokasi = filterLokasiAset === "Semua" || String(a.lokasi_id) === filterLokasiAset;
+                    const matchTanggal = !filterTanggalAset || a.tanggal_masuk?.startsWith(filterTanggalAset);
+                    return matchSearch && matchJenis && matchKondisi && matchStatus && matchInventaris && matchLokasi && matchTanggal;
                 });
             },
             renderRow: (item, index) => [index + 1, item.kode_aset, item.nama_aset, item.jenis_aset, item.detail_aset || "-", item.kondisi, formatRupiah(item.nilai_aset), item.lokasi?.nama_lokasi || "-", item.rfid_tag || "-", item.status, item.status_inventaris || "-", formatTanggal(item.tanggal_masuk)],
@@ -180,7 +244,9 @@ export default function Laporan() {
                 return penilaians.filter((p) => {
                     const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword) || p.user?.username?.toLowerCase().includes(keyword);
                     const matchPrioritas = filterPrioritas === "Semua" || getPrioritas(p.total_nilai) === filterPrioritas;
-                    return matchSearch && matchPrioritas;
+                    const matchTanggal = !filterTanggalPenilaian || p.created_at?.startsWith(filterTanggalPenilaian);
+                    const matchWaktu = filterWaktuPenilaian === "Semua" || getTimelineGroup(p.created_at) === filterWaktuPenilaian;
+                    return matchSearch && matchPrioritas && matchTanggal && matchWaktu;
                 });
             },
             renderRow: (item, index) => [index + 1, item.aset?.kode_aset || "-", item.aset?.nama_aset || "-", item.kondisi_penilaian || "-", item.usia_pemakaian_aset || "-", item.frekuensi_penggunaan || "-", item.nilai_ekonomis || "-", item.biaya_pemeliharaan || "-", item.tingkat_urgensi || "-", item.total_nilai, getPrioritas(item.total_nilai), item.user?.username || "-", formatTanggal(item.created_at)],
@@ -194,11 +260,34 @@ export default function Laporan() {
                 return pemeliharaans.filter((p) => {
                     const matchSearch = p.aset?.nama_aset?.toLowerCase().includes(keyword) || p.aset?.kode_aset?.toLowerCase().includes(keyword) || p.deskripsi?.toLowerCase().includes(keyword) || p.user?.username?.toLowerCase().includes(keyword);
                     const matchStatus = filterStatusPemeliharaan === "Semua" || getStatusPemeliharaan(p) === filterStatusPemeliharaan;
-                    return matchSearch && matchStatus;
+                    const matchTanggal = !filterTanggalPemeliharaan || p.tanggal?.startsWith(filterTanggalPemeliharaan);
+                    const matchWaktu = filterWaktuPemeliharaan === "Semua" || getTimelineGroup(p.tanggal) === filterWaktuPemeliharaan;
+                    return matchSearch && matchStatus && matchTanggal && matchWaktu;
                 });
             },
             renderRow: (item, index) => [index + 1, item.aset?.kode_aset || "-", item.aset?.nama_aset || "-", item.deskripsi, formatRupiah(item.biaya), formatTanggal(item.tanggal), formatTanggal(item.tanggal_selesai), item.user?.username || item.user?.nama || "-", getStatusPemeliharaan(item)],
             exportRow: (item, index) => ({ No: index + 1, "Kode Aset": item.aset?.kode_aset || "-", "Nama Aset": item.aset?.nama_aset || "-", Deskripsi: item.deskripsi, Biaya: item.biaya, "Tgl Mulai": formatTanggal(item.tanggal), "Tgl Selesai": formatTanggal(item.tanggal_selesai), "Diinput Oleh": item.user?.username || item.user?.nama || "-", Status: getStatusPemeliharaan(item) }),
+        },
+        scan: {
+            title: "Laporan Data Riwayat Scan",
+            columns: ["No", "Kode Aset", "Nama Aset", "RFID Tag", "Lokasi", "User", "Waktu"],
+            getData: () => {
+                const keyword = search.toLowerCase();
+                return scans.filter((s) => {
+                    const matchSearch =
+                        s.aset?.nama_aset?.toLowerCase().includes(keyword) ||
+                        s.aset?.kode_aset?.toLowerCase().includes(keyword) ||
+                        s.aset?.rfid_tag?.toLowerCase().includes(keyword) ||
+                        s.lokasi?.nama_lokasi?.toLowerCase().includes(keyword) ||
+                        s.user?.username?.toLowerCase().includes(keyword);
+                    const matchLokasi = filterLokasiScan === "Semua" || String(s.lokasi_id) === filterLokasiScan;
+                    const matchTanggal = !filterTanggalScan || s.created_at?.startsWith(filterTanggalScan);
+                    const matchWaktu = filterWaktuScan === "Semua" || getTimelineGroup(s.created_at) === filterWaktuScan;
+                    return matchSearch && matchLokasi && matchTanggal && matchWaktu;
+                });
+            },
+            renderRow: (item, index) => [index + 1, item.aset?.kode_aset || "-", item.aset?.nama_aset || "-", item.aset?.rfid_tag || "-", item.lokasi?.nama_lokasi || "-", item.user?.username || item.user?.nama || "-", formatTanggal(item.created_at)],
+            exportRow: (item, index) => ({ No: index + 1, "Kode Aset": item.aset?.kode_aset || "-", "Nama Aset": item.aset?.nama_aset || "-", "RFID Tag": item.aset?.rfid_tag || "-", Lokasi: item.lokasi?.nama_lokasi || "-", User: item.user?.username || item.user?.nama || "-", Waktu: formatTanggal(item.created_at) }),
         },
     };
 
@@ -293,9 +382,45 @@ export default function Laporan() {
         lokasi: lokasis.length,
         penilaian: penilaians.length,
         pemeliharaan: pemeliharaans.length,
+        scan: scans.length,
     };
 
     // ==================== RENDER ====================
+    const renderTimeFilters = (waktuState, setWaktuState, setTanggalState) => (
+        <div className="flex flex-wrap gap-2 w-full mt-2">
+            {["Semua", "Hari Ini", "Kemarin", "Minggu Ini", "Bulan Ini", "Bulan Lalu", "Lebih Lama"].map((waktu) => {
+                const isActive = waktuState === waktu;
+                const colors = {
+                    "Semua": "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300",
+                    "Hari Ini": "bg-green-50 text-green-700 hover:bg-green-100 border-green-300",
+                    "Kemarin": "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-300",
+                    "Minggu Ini": "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-300",
+                    "Bulan Ini": "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-300",
+                    "Bulan Lalu": "bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-300",
+                    "Lebih Lama": "bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-300",
+                };
+                const activeColors = {
+                    "Semua": "bg-gray-700 text-white border-gray-700",
+                    "Hari Ini": "bg-green-600 text-white border-green-600",
+                    "Kemarin": "bg-blue-600 text-white border-blue-600",
+                    "Minggu Ini": "bg-indigo-600 text-white border-indigo-600",
+                    "Bulan Ini": "bg-yellow-500 text-white border-yellow-500",
+                    "Bulan Lalu": "bg-orange-500 text-white border-orange-500",
+                    "Lebih Lama": "bg-gray-500 text-white border-gray-500",
+                };
+                return (
+                    <button
+                        key={waktu}
+                        onClick={() => { setWaktuState(waktu); setTanggalState(""); }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${isActive ? activeColors[waktu] : colors[waktu]}`}
+                    >
+                        {waktu === "Semua" ? "📋 Semua Waktu" : `${timelineConfig[waktu]?.icon || ""} ${waktu}`}
+                    </button>
+                );
+            })}
+        </div>
+    );
+
     return (
         <div className="space-y-6">
             {/* ==================== HEADER ==================== */}
@@ -333,7 +458,7 @@ export default function Laporan() {
             </div>
 
             {/* ==================== STAT CARDS ==================== */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.key;
@@ -450,37 +575,80 @@ export default function Laporan() {
                         )}
                         {activeTab === "aset" && (
                             <>
-                                <select value={filterKondisi} onChange={(e) => setFilterKondisi(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
-                                    <option value="Semua">Semua Kondisi</option>
-                                    <option value="Baik">Baik</option>
-                                    <option value="Rusak Ringan">Rusak Ringan</option>
-                                    <option value="Rusak Berat">Rusak Berat</option>
-                                </select>
-                                <select value={filterStatusAset} onChange={(e) => setFilterStatusAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
-                                    <option value="Semua">Semua Status</option>
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Non-Aktif">Non-Aktif</option>
-                                </select>
+                                <div className="flex flex-wrap gap-2 w-full mt-2">
+                                    <select value={filterJenisAset} onChange={(e) => setFilterJenisAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Jenis</option>
+                                        <option value="Hardware">Hardware</option>
+                                        <option value="Software">Software</option>
+                                        <option value="Jaringan (Networking)">Jaringan</option>
+                                        <option value="Server & Storage">Server & Storage</option>
+                                    </select>
+                                    <select value={filterKondisiAset} onChange={(e) => setFilterKondisiAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Kondisi</option>
+                                        <option value="Baik">Baik</option>
+                                        <option value="Rusak Ringan">Rusak Ringan</option>
+                                        <option value="Rusak Berat">Rusak Berat</option>
+                                    </select>
+                                    <select value={filterStatusAset} onChange={(e) => setFilterStatusAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Status</option>
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Non-Aktif">Non-Aktif</option>
+                                    </select>
+                                    <select value={filterInventarisAset} onChange={(e) => setFilterInventarisAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Inventaris</option>
+                                        <option value="Sudah Terinventarisir">Sudah Terinventarisir</option>
+                                        <option value="Belum Terinventarisir">Belum Terinventarisir</option>
+                                    </select>
+                                    <select value={filterLokasiAset} onChange={(e) => setFilterLokasiAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Lokasi</option>
+                                        {lokasis.map((l) => <option key={l.id} value={String(l.id)}>{l.nama_lokasi}</option>)}
+                                    </select>
+                                    <input type="date" title="Filter Tanggal Masuk" value={filterTanggalAset} onChange={(e) => setFilterTanggalAset(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+                                </div>
                             </>
                         )}
                         {activeTab === "penilaian" && (
-                            <select value={filterPrioritas} onChange={(e) => setFilterPrioritas(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
-                                <option value="Semua">Semua Prioritas</option>
-                                <option value="Tinggi">Tinggi (≥70)</option>
-                                <option value="Sedang">Sedang (45-69)</option>
-                                <option value="Rendah">Rendah (&lt;45)</option>
-                            </select>
+                            <div className="flex flex-col w-full">
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <select value={filterPrioritas} onChange={(e) => setFilterPrioritas(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Prioritas</option>
+                                        <option value="Tinggi">Tinggi (≥70)</option>
+                                        <option value="Sedang">Sedang (45-69)</option>
+                                        <option value="Rendah">Rendah (&lt;45)</option>
+                                    </select>
+                                    <input type="date" title="Filter Tanggal Penilaian" value={filterTanggalPenilaian} onChange={(e) => { setFilterTanggalPenilaian(e.target.value); setFilterWaktuPenilaian("Semua"); }} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+                                </div>
+                                {renderTimeFilters(filterWaktuPenilaian, setFilterWaktuPenilaian, setFilterTanggalPenilaian)}
+                            </div>
                         )}
                         {activeTab === "pemeliharaan" && (
-                            <select value={filterStatusPemeliharaan} onChange={(e) => setFilterStatusPemeliharaan(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
-                                <option value="Semua">Semua Status</option>
-                                <option value="Berlangsung">Berlangsung</option>
-                                <option value="Selesai">Selesai</option>
-                            </select>
+                            <div className="flex flex-col w-full">
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <select value={filterStatusPemeliharaan} onChange={(e) => setFilterStatusPemeliharaan(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Status</option>
+                                        <option value="Berlangsung">Berlangsung</option>
+                                        <option value="Selesai">Selesai</option>
+                                    </select>
+                                    <input type="date" title="Filter Tanggal Pemeliharaan" value={filterTanggalPemeliharaan} onChange={(e) => { setFilterTanggalPemeliharaan(e.target.value); setFilterWaktuPemeliharaan("Semua"); }} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+                                </div>
+                                {renderTimeFilters(filterWaktuPemeliharaan, setFilterWaktuPemeliharaan, setFilterTanggalPemeliharaan)}
+                            </div>
                         )}
-                        {(filterRole !== "Semua" || filterKondisi !== "Semua" || filterStatusAset !== "Semua" || filterPrioritas !== "Semua" || filterStatusPemeliharaan !== "Semua") && (
-                            <button onClick={resetFilters} className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition text-sm flex items-center gap-1">
-                                <XMarkIcon className="w-3.5 h-3.5" /> Reset
+                        {activeTab === "scan" && (
+                            <div className="flex flex-col w-full">
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <select value={filterLokasiScan} onChange={(e) => setFilterLokasiScan(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm">
+                                        <option value="Semua">Semua Lokasi</option>
+                                        {lokasis.map((l) => <option key={l.id} value={String(l.id)}>{l.nama_lokasi}</option>)}
+                                    </select>
+                                    <input type="date" title="Filter Tanggal Scan" value={filterTanggalScan} onChange={(e) => { setFilterTanggalScan(e.target.value); setFilterWaktuScan("Semua"); }} className="px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" />
+                                </div>
+                                {renderTimeFilters(filterWaktuScan, setFilterWaktuScan, setFilterTanggalScan)}
+                            </div>
+                        )}
+                        {(filterRole !== "Semua" || filterJenisAset !== "Semua" || filterKondisiAset !== "Semua" || filterStatusAset !== "Semua" || filterInventarisAset !== "Semua" || filterLokasiAset !== "Semua" || filterTanggalAset !== "" || filterPrioritas !== "Semua" || filterStatusPemeliharaan !== "Semua" || filterLokasiScan !== "Semua" || filterTanggalScan !== "" || filterWaktuScan !== "Semua" || filterTanggalPenilaian !== "" || filterWaktuPenilaian !== "Semua" || filterTanggalPemeliharaan !== "" || filterWaktuPemeliharaan !== "Semua") && (
+                            <button onClick={resetFilters} className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition text-sm flex items-center gap-1 mt-2">
+                                <XMarkIcon className="w-3.5 h-3.5" /> Reset Filter
                             </button>
                         )}
                     </div>

@@ -34,6 +34,7 @@ Route::apiResource('pemeliharaans', PemeliharaanController::class);
 Route::apiResource('asets', AsetController::class);
 Route::apiResource('users', UsersController::class);
 Route::apiResource('lokasis', LokasiController::class);
+Route::post('bulk-scan-rfid', [RiwayatScanController::class, 'bulkScanRfid']);
 Route::apiResource('riwayat-scans', RiwayatScanController::class);
 
 

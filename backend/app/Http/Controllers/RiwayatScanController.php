@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\RiwayatScan;
+use App\Models\Aset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RiwayatScanController extends Controller
 {
@@ -40,6 +42,68 @@ class RiwayatScanController extends Controller
             'message' => 'Data scan berhasil dicatat',
             'data' => $scan
         ], 201);
+    }
+
+    /**
+     * POST /api/bulk-scan-rfid
+     * Bulk scan RFID: match rfid_tags to assets, update locations, create scan history
+     */
+    public function bulkScanRfid(Request $request)
+    {
+        $request->validate([
+            'lokasi_id' => 'required|exists:lokasis,id',
+            'rfid_list' => 'required|array|min:1',
+            'rfid_list.*' => 'required|string',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $lokasiId = $request->lokasi_id;
+        $rfidList = array_unique($request->rfid_list);
+        $userId = $request->user_id;
+
+        $success = [];
+        $notFound = [];
+
+        DB::beginTransaction();
+        try {
+            // Find all assets matching the RFID tags
+            $foundAsets = Aset::whereIn('rfid_tag', $rfidList)->get()->keyBy('rfid_tag');
+
+            foreach ($rfidList as $rfidTag) {
+                if ($foundAsets->has($rfidTag)) {
+                    $aset = $foundAsets->get($rfidTag);
+
+                    // Update asset location
+                    $aset->update(['lokasi_id' => $lokasiId]);
+
+                    // Create scan history record
+                    RiwayatScan::create([
+                        'aset_id' => $aset->id,
+                        'lokasi_id' => $lokasiId,
+                        'user_id' => $userId,
+                    ]);
+
+                    $success[] = $rfidTag;
+                } else {
+                    $notFound[] = $rfidTag;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Bulk scan RFID selesai',
+                'success' => $success,
+                'not_found' => $notFound,
+                'total_success' => count($success),
+                'total_not_found' => count($notFound),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal memproses bulk scan: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
