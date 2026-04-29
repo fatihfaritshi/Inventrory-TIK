@@ -311,16 +311,18 @@ export default function Asets() {
               />
             </div>
 
-            {/* Add Button */}
-            <button
-              onClick={openCreateModal}
-              className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-800 
-                hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg 
-                hover:shadow-xl transition-all duration-300 whitespace-nowrap"
-            >
-              <PlusIcon className="w-5 h-5" />
-              Tambah Aset
-            </button>
+            {/* Add Button - Hidden for Petugas */}
+            {user.role !== "Petugas" && (
+              <button
+                onClick={openCreateModal}
+                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-800 
+                  hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg 
+                  hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Tambah Aset
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -390,74 +392,92 @@ export default function Asets() {
       </div>
 
       {/* ================= TABEL ================= */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border-2 border-blue-600 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-6 border-2 border-blue-600" style={{ overflow: "hidden", maxWidth: "100%" }}>
         {loading ? (
           <div className="text-center py-10 text-gray-600">
             Loading data aset...
           </div>
         ) : (
-          <div className="relative">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div style={{ overflowX: "auto", width: "100%", maxWidth: "100%", WebkitOverflowScrolling: "touch" }}>
+            <table className="divide-y divide-gray-200" style={{ minWidth: "max-content", width: "100%" }}>
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                    Kode
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    No
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                    Nama
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    Kode Aset
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    Nama Aset
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Jenis
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    Detail Aset
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Kondisi
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                    Nilai
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    Nilai Aset
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Lokasi
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
-                    Tanggal
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    RFID Tag
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
+                    Tanggal Masuk
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Foto
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Status Inventaris
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase whitespace-nowrap">
                     Status
                   </th>
-                  <th className="sticky right-0 bg-gray-50 px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)]">
+                  <th className="sticky right-0 bg-gray-50 px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase whitespace-nowrap shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)]">
                     Aksi
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {filteredAsets.map((aset) => (
-                  <tr key={aset.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 text-sm text-gray-700 font-mono">
+                {filteredAsets.map((aset, index) => (
+                  <tr key={aset.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-4 py-3 text-sm text-gray-700 text-center font-semibold whitespace-nowrap">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
                       {aset.kode_aset}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       {aset.nama_aset}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       {aset.jenis_aset}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                      {aset.detail_aset || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       {aset.kondisi}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       Rp {formatRupiah(aset.nilai_aset)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       {aset.lokasi?.nama_lokasi || "-"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
-                      {new Date(aset.tanggal_masuk).toLocaleDateString()}
+                    <td className="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                      {aset.rfid_tag || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                      {new Date(aset.tanggal_masuk).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">
                       {aset.foto_aset ? (
@@ -475,21 +495,21 @@ export default function Asets() {
                         <span className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded text-gray-400 text-xs">No Image</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center">
+                    <td className="px-4 py-3 text-sm text-center whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${aset.status_inventaris === "INTRA"
-                            ? "bg-purple-300 text-purple-900"
-                            : "bg-orange-300 text-orange-900"
+                          ? "bg-purple-300 text-purple-900"
+                          : "bg-orange-300 text-orange-900"
                           }`}
                       >
                         {aset.status_inventaris}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${aset.status.toLowerCase() === "aktif"
-                            ? "bg-lime-300 text-lime-900"
-                            : "bg-red-300 text-red-900"
+                          ? "bg-lime-300 text-lime-900"
+                          : "bg-red-300 text-red-900"
                           }`}
                       >
                         {aset.status}
@@ -506,23 +526,27 @@ export default function Asets() {
                           <EyeIcon className="w-4 h-4" />
                         </button>
 
-                        {/* EDIT */}
-                        <button
-                          onClick={() => openEditModal(aset)}
-                          className="p-2 rounded-lg border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white transition"
-                          title="Edit"
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
+                        {/* EDIT - Hidden for Petugas */}
+                        {user.role !== "Petugas" && (
+                          <button
+                            onClick={() => openEditModal(aset)}
+                            className="p-2 rounded-lg border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white transition"
+                            title="Edit"
+                          >
+                            <PencilIcon className="w-4 h-4" />
+                          </button>
+                        )}
 
-                        {/* DELETE */}
-                        <button
-                          onClick={() => handleDelete(aset.id)}
-                          className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
-                          title="Hapus"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                        {/* DELETE - Hidden for Petugas */}
+                        {user.role !== "Petugas" && (
+                          <button
+                            onClick={() => handleDelete(aset.id)}
+                            className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
+                            title="Hapus"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -530,7 +554,7 @@ export default function Asets() {
                 {filteredAsets.length === 0 && !loading && (
                   <tr>
                     <td
-                      colSpan={11}
+                      colSpan={14}
                       className="px-6 py-4 text-center text-gray-500"
                     >
                       Belum ada data aset

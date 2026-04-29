@@ -18,6 +18,8 @@ import {
     ArrowPathIcon,
     XCircleIcon,
     ShieldCheckIcon,
+    SignalIcon,
+    QrCodeIcon,
 } from "@heroicons/react/24/solid";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -36,6 +38,7 @@ export default function Dashboard() {
     const [penilaians, setPenilaians] = useState([]);
     const [pemeliharaans, setPemeliharaans] = useState([]);
     const [statistikPemeliharaan, setStatistikPemeliharaan] = useState({});
+    const [scans, setScans] = useState([]);
 
     const user = JSON.parse(localStorage.getItem("user")) || { username: "User", role: "Petugas" };
 
@@ -46,16 +49,17 @@ export default function Dashboard() {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [uRes, aRes, lRes, pRes, mRes, sRes] = await Promise.all([
+            const [uRes, aRes, lRes, pRes, mRes, sRes, scanRes] = await Promise.all([
                 fetch("http://127.0.0.1:8000/api/users"),
                 fetch("http://127.0.0.1:8000/api/asets"),
                 fetch("http://127.0.0.1:8000/api/lokasis"),
                 fetch("http://127.0.0.1:8000/api/penilaians"),
                 fetch("http://127.0.0.1:8000/api/pemeliharaans"),
                 fetch("http://127.0.0.1:8000/api/pemeliharaans/statistik"),
+                fetch("http://127.0.0.1:8000/api/riwayat-scans"),
             ]);
-            const [uD, aD, lD, pD, mD, sD] = await Promise.all([
-                uRes.json(), aRes.json(), lRes.json(), pRes.json(), mRes.json(), sRes.json(),
+            const [uD, aD, lD, pD, mD, sD, scanD] = await Promise.all([
+                uRes.json(), aRes.json(), lRes.json(), pRes.json(), mRes.json(), sRes.json(), scanRes.json(),
             ]);
             setUsers(uD.data || uD || []);
             setAsets(aD.data || []);
@@ -63,6 +67,7 @@ export default function Dashboard() {
             setPenilaians(pD.data || []);
             setPemeliharaans(mD.data || []);
             setStatistikPemeliharaan(sD || {});
+            setScans(scanD.data || []);
         } catch (err) {
             console.error("❌ Dashboard fetch error:", err);
         } finally {
@@ -113,6 +118,9 @@ export default function Dashboard() {
     const adminCount = users.filter(u => u.role === "Administrator").length;
     const petugasCount = users.filter(u => u.role === "Petugas").length;
     const pimpinanCount = users.filter(u => u.role === "Pimpinan").length;
+
+    // Scan stats
+    const scanHariIni = scans.filter((s) => s.created_at?.startsWith(new Date().toISOString().slice(0, 10))).length;
 
     // ==================== CHART DATA ====================
     // Aset by kondisi pie
@@ -180,6 +188,11 @@ export default function Dashboard() {
 
     // Penilaian terbaru
     const recentPenilaian = [...penilaians]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+
+    // Scan terbaru
+    const recentScans = [...scans]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 5);
 
@@ -256,7 +269,7 @@ export default function Dashboard() {
             </div>
 
             {/* ==================== MAIN STAT CARDS ==================== */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[
                     { label: "Total Aset", value: asets.length, icon: ArchiveBoxIcon, gradient: "from-blue-500 to-blue-700" },
                     { label: "Aset Aktif", value: asetAktif, icon: CheckCircleIcon, gradient: "from-emerald-500 to-emerald-700" },
@@ -264,6 +277,8 @@ export default function Dashboard() {
                     { label: "Total Penilaian", value: penilaians.length, icon: ClipboardDocumentCheckIcon, gradient: "from-purple-500 to-purple-700" },
                     { label: "Pemeliharaan", value: pemeliharaans.length, icon: WrenchScrewdriverIcon, gradient: "from-cyan-500 to-cyan-700" },
                     { label: "Total User", value: users.length, icon: UsersIcon, gradient: "from-pink-500 to-pink-700" },
+                    { label: "Total Scan", value: scans.length, icon: SignalIcon, gradient: "from-indigo-500 to-indigo-700" },
+                    { label: "Scan Hari Ini", value: scanHariIni, icon: QrCodeIcon, gradient: "from-teal-500 to-teal-700" },
                 ].map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -599,7 +614,7 @@ export default function Dashboard() {
             </div>
 
             {/* ==================== RECENT ACTIVITIES ==================== */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Pemeliharaan Terbaru */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                     <div className="bg-gradient-to-r from-cyan-500 to-cyan-700 px-6 py-4">
@@ -674,6 +689,40 @@ export default function Dashboard() {
                             );
                         }) : (
                             <div className="px-6 py-10 text-center text-gray-400 text-sm">Belum ada data penilaian</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Scan Terbaru */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-indigo-500 to-indigo-700 px-6 py-4">
+                        <h3 className="text-white font-bold flex items-center gap-2">
+                            <SignalIcon className="w-5 h-5" />
+                            Scan RFID Terbaru
+                        </h3>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {recentScans.length > 0 ? recentScans.map((item, i) => (
+                            <div key={i} className="px-6 py-4 hover:bg-gray-50 transition flex items-center justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800 truncate">
+                                        {item.aset?.nama_aset || "-"}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        Lokasi: {item.lokasi?.nama_lokasi || "-"} • User: {item.user?.username || "-"}
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {item.created_at ? new Date(item.created_at).toLocaleString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                                    </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className="px-2.5 py-1 text-xs font-bold rounded-full text-indigo-700 bg-indigo-100 border border-indigo-200">
+                                        {item.aset?.kode_aset || "-"}
+                                    </span>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="px-6 py-10 text-center text-gray-400 text-sm">Belum ada data scan</div>
                         )}
                     </div>
                 </div>

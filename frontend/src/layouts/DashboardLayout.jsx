@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex">
 
       {/* Sidebar */}
       <Sidebar
@@ -34,8 +34,8 @@ export default function DashboardLayout() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        {/* Konten halaman - padding responsif */}
-        <main className="flex-1 mt-16 md:mt-20 overflow-y-auto scrollbar-hide min-w-0">
+        {/* Konten halaman - halaman scroll secara natural */}
+        <main className="flex-1 mt-16 md:mt-20 min-w-0">
           {/* Container dengan max-width untuk konsistensi */}
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 md:py-6">
             <Outlet />

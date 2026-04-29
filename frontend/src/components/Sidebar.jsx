@@ -51,88 +51,88 @@ export default function Sidebar({ role, isOpen, onClose }) {
       <aside
         className={`
           fixed top-0 left-0 z-50
-          w-64 h-screen px-6 py-8
+          w-64 h-screen
           bg-gradient-to-b from-[#020617]/100 via-[#0f172a]/90 to-[#0f172a]
           backdrop-blur-2xl
           border-r border-white/30
           shadow-[0_0_60px_rgba(37,99,235,0.15)]
           text-white
-          overflow-y-auto scrollbar-hide
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
+          flex flex-col
         `}
       >
         {/* Neon glow accent */}
-        <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-800/70 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-800/50 rounded-full blur-[100px]" />
+        <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-800/70 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-800/50 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Close button (mobile only) */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition md:hidden"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition md:hidden z-10"
         >
           <XMarkIcon className="w-6 h-6 text-white" />
         </button>
 
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="relative mb-4">
-            {/* Blur circle background */}
-            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-60 rounded-full"></div>
+        {/* ==================== SCROLLABLE CONTENT AREA ==================== */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-6 py-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8 text-center">
+            <div className="relative mb-4">
+              {/* Blur circle background */}
+              <div className="absolute inset-0 bg-blue-500 blur-xl opacity-60 rounded-full"></div>
 
-            {/* Icon container */}
-            <div className="relative bg-blue-800 p-4 rounded-full shadow-lg">
-              <ArchiveBoxIcon className="w-8 h-8 text-white" />
+              {/* Icon container */}
+              <div className="relative bg-blue-800 p-4 rounded-full shadow-lg">
+                <ArchiveBoxIcon className="w-8 h-8 text-white" />
+              </div>
             </div>
+
+            {/* Teks kecil */}
+            <p className="text-xs text-white tracking-widest">INVENTORY</p>
+            <p className="text-xs text-blue-400 tracking-widest">TIK POLDA SUMBAR</p>
           </div>
 
-          {/* Teks kecil */}
-          <p className="text-xs text-white tracking-widest">INVENTORY</p>
-          <p className="text-xs text-blue-400 tracking-widest">TIK POLDA SUMBAR</p>
+          {/* Menu */}
+          <nav className="relative space-y-2">
+            {menus[role]?.map((menu) => {
+              const Icon = menu.icon;
+              return (
+                <NavLink
+                  key={menu.path}
+                  to={menu.path}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `
+                    group flex items-center gap-3 px-4 py-3 rounded-xl
+                    transition-all duration-300
+                    ${
+                      isActive
+                        ? "bg-blue-600/40 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
+                        : "hover:bg-white/5"
+                    }
+                    `
+                  }
+                >
+                  <Icon
+                    className="
+                      w-5 h-5 text-blue-400
+                      group-hover:text-blue-300 transition
+                    "
+                  />
+                  <span className="text-sm font-medium tracking-wide">
+                    {menu.name}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
 
-        {/* Menu */}
-        <nav className="relative space-y-2">
-          {menus[role]?.map((menu) => {
-            const Icon = menu.icon;
-            return (
-              <NavLink
-                key={menu.path}
-                to={menu.path}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `
-                  group flex items-center gap-3 px-4 py-3 rounded-xl
-                  transition-all duration-300
-                  ${
-                    isActive
-                      ? "bg-blue-600/40 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
-                      : "hover:bg-white/5"
-                  }
-                  `
-                }
-              >
-                <Icon
-                  className="
-                    w-5 h-5 text-blue-400
-                    group-hover:text-blue-300 transition
-                  "
-                />
-                <span className="text-sm font-medium tracking-wide">
-                  {menu.name}
-                </span>
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="absolute bottom-8 left-0 w-full px-6 flex flex-col items-center gap-3">
+        {/* ==================== FOOTER (STICKY BOTTOM) ==================== */}
+        <div className="px-6 py-6 flex flex-col items-center gap-3 border-t border-white/10">
           
-          {/* Divider */}
-          <div className="w-full h-px bg-white/[0.06] mb-1" />
-
           {/* Logout Button */}
           <button
             onClick={() => {

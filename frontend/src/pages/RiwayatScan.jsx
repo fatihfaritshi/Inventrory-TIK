@@ -106,7 +106,7 @@ export default function RiwayatScan() {
             });
             if (!res.ok) { const err = await res.json(); throw new Error(err.message); }
             const data = await res.json();
-            
+
             let message = `Berhasil scan: ${data.total_success || 0} aset.`;
             if (data.total_not_found > 0) {
                 message += ` Tidak ditemukan: ${data.total_not_found} RFID.`;
@@ -114,7 +114,7 @@ export default function RiwayatScan() {
             } else {
                 showToast(message, "success");
             }
-            
+
             setModalOpen(false);
             setRfidList([]);
             setFormData({ aset_id: "", lokasi_id: "" });
@@ -554,7 +554,7 @@ export default function RiwayatScan() {
                                         <QrCodeIcon className="w-16 h-16 text-cyan-400 mb-2 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse" />
                                         <p className="text-white/90 font-bold text-lg mb-1 z-10">Mulai Scan RFID</p>
                                         <p className="text-white/50 text-xs text-center mb-4 z-10">Arahkan kursor ke area input di bawah ini dan dekatkan kartu ke reader</p>
-                                        
+
                                         <input
                                             type="text"
                                             placeholder="[ Menunggu Input Scan... ]"
@@ -565,7 +565,7 @@ export default function RiwayatScan() {
                                             className="w-full max-w-xs px-4 py-3 text-center bg-black/40 border border-cyan-500/50 rounded-lg text-cyan-300 font-mono tracking-widest placeholder-cyan-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent shadow-inner z-10 relative"
                                         />
                                     </div>
-                                    
+
                                     {/* SCANNED RFID LIST */}
                                     {rfidList.length > 0 && (
                                         <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-lg">

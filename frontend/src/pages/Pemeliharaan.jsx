@@ -434,77 +434,77 @@ export default function Pemeliharaan() {
                     ) : activeTab === "ranking" ? (
                         /* ==================== TAB 1: RANKING PRIORITAS ==================== */
                         <div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Rank</th>
-                                        <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Kode Aset</th>
-                                        <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Nama Aset</th>
-                                        <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Total Nilai</th>
-                                        <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Prioritas</th>
-                                        <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Penilai</th>
-                                        <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Tanggal</th>
-                                        <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white">
-                                    {paginatedRanking.map((penilaian, index) => {
-                                        const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
-                                        const prioritas = getPrioritas(penilaian.total_nilai);
-                                        return (
-                                            <tr key={penilaian.penilaian_id || penilaian.id || index} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-4 py-4 text-center">
-                                                    <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${globalIndex === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : globalIndex === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : globalIndex === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{globalIndex + 1}</span>
-                                                </td>
-                                                <td className="px-4 py-4 text-sm font-mono font-semibold text-gray-700">{penilaian.aset?.kode_aset || "-"}</td>
-                                                <td className="px-4 py-4 text-sm text-gray-700 font-medium">{penilaian.aset?.nama_aset || "-"}</td>
-                                                <td className="px-4 py-4 text-center">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <span className="text-2xl font-bold text-gray-800">{penilaian.total_nilai}</span>
-                                                        <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{ width: `${Math.min(penilaian.total_nilai, 100)}%` }}></div></div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
-                                                    <span className={`px-4 py-2 rounded-full text-xs font-bold text-white shadow-md ${prioritas.color}`}>{prioritas.label}</span>
-                                                </td>
-                                                <td className="px-4 py-4 text-sm text-gray-700">{penilaian.user?.username || "-"}</td>
-                                                <td className="px-4 py-4 text-sm text-gray-600 text-center">{penilaian.created_at ? new Date(penilaian.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
-                                                <td className="px-4 py-4 text-center">
-                                                    <button onClick={() => handleJadwalkanFromRanking(penilaian)} className="px-4 py-2 bg-gradient-to-r from-lime-500 to-lime-700 hover:from-lime-600 hover:to-lime-800 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2 mx-auto">
-                                                        <CalendarIcon className="w-4 h-4" /> Jadwalkan
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {rankedPenilaians.length === 0 && (
-                                        <tr><td colSpan={8} className="px-6 py-16 text-center text-gray-500">
-                                            <ArchiveBoxIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                                            <p className="text-lg font-semibold">{penilaians.length === 0 ? "Belum ada data penilaian" : "Semua penilaian sudah dijadwalkan pemeliharaan"}</p>
-                                        </td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        {/* PAGINATION */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                                <p className="text-sm text-gray-600">Halaman <span className="font-bold">{currentPage}</span> dari <span className="font-bold">{totalPages}</span> <span className="text-gray-400">({rankedPenilaians.length} data)</span></p>
-                                <div className="flex items-center gap-1">
-                                    <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">«</button>
-                                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">‹ Prev</button>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2).map((page, idx, arr) => (
-                                        <span key={page}>
-                                            {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-1 text-gray-400">...</span>}
-                                            <button onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 text-sm rounded-lg border transition ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md" : "border-gray-300 hover:bg-gray-100"}`}>{page}</button>
-                                        </span>
-                                    ))}
-                                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Next ›</button>
-                                    <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">»</button>
-                                </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Rank</th>
+                                            <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Kode Aset</th>
+                                            <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Nama Aset</th>
+                                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Total Nilai</th>
+                                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Prioritas</th>
+                                            <th className="px-4 py-4 text-left text-sm font-bold text-gray-700 uppercase">Penilai</th>
+                                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Tanggal</th>
+                                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 uppercase">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 bg-white">
+                                        {paginatedRanking.map((penilaian, index) => {
+                                            const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
+                                            const prioritas = getPrioritas(penilaian.total_nilai);
+                                            return (
+                                                <tr key={penilaian.penilaian_id || penilaian.id || index} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-4 py-4 text-center">
+                                                        <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm shadow-md ${globalIndex === 0 ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : globalIndex === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white" : globalIndex === 2 ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white" : "bg-gray-100 text-gray-700"}`}>{globalIndex + 1}</span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-sm font-mono font-semibold text-gray-700">{penilaian.aset?.kode_aset || "-"}</td>
+                                                    <td className="px-4 py-4 text-sm text-gray-700 font-medium">{penilaian.aset?.nama_aset || "-"}</td>
+                                                    <td className="px-4 py-4 text-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-2xl font-bold text-gray-800">{penilaian.total_nilai}</span>
+                                                            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${prioritas.color}`} style={{ width: `${Math.min(penilaian.total_nilai, 100)}%` }}></div></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-center">
+                                                        <span className={`px-4 py-2 rounded-full text-xs font-bold text-white shadow-md ${prioritas.color}`}>{prioritas.label}</span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-sm text-gray-700">{penilaian.user?.username || "-"}</td>
+                                                    <td className="px-4 py-4 text-sm text-gray-600 text-center">{penilaian.created_at ? new Date(penilaian.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
+                                                    <td className="px-4 py-4 text-center">
+                                                        <button onClick={() => handleJadwalkanFromRanking(penilaian)} className="px-4 py-2 bg-gradient-to-r from-lime-500 to-lime-700 hover:from-lime-600 hover:to-lime-800 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2 mx-auto">
+                                                            <CalendarIcon className="w-4 h-4" /> Jadwalkan
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {rankedPenilaians.length === 0 && (
+                                            <tr><td colSpan={8} className="px-6 py-16 text-center text-gray-500">
+                                                <ArchiveBoxIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                                                <p className="text-lg font-semibold">{penilaians.length === 0 ? "Belum ada data penilaian" : "Semua penilaian sudah dijadwalkan pemeliharaan"}</p>
+                                            </td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                        )}
+                            {/* PAGINATION */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                                    <p className="text-sm text-gray-600">Halaman <span className="font-bold">{currentPage}</span> dari <span className="font-bold">{totalPages}</span> <span className="text-gray-400">({rankedPenilaians.length} data)</span></p>
+                                    <div className="flex items-center gap-1">
+                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">«</button>
+                                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">‹ Prev</button>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2).map((page, idx, arr) => (
+                                            <span key={page}>
+                                                {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-1 text-gray-400">...</span>}
+                                                <button onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 text-sm rounded-lg border transition ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md" : "border-gray-300 hover:bg-gray-100"}`}>{page}</button>
+                                            </span>
+                                        ))}
+                                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Next ›</button>
+                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">»</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         /* ==================== TAB 2: RIWAYAT PEMELIHARAAN ==================== */

@@ -40,7 +40,7 @@ export default function Laporan() {
 
     // Per-tab filters
     const [filterRole, setFilterRole] = useState("Semua");
-    
+
     // Aset filters
     const [filterJenisAset, setFilterJenisAset] = useState("Semua");
     const [filterKondisiAset, setFilterKondisiAset] = useState("Semua");
@@ -48,17 +48,17 @@ export default function Laporan() {
     const [filterInventarisAset, setFilterInventarisAset] = useState("Semua");
     const [filterLokasiAset, setFilterLokasiAset] = useState("Semua");
     const [filterTanggalAset, setFilterTanggalAset] = useState("");
-    
+
     // Penilaian filters
     const [filterPrioritas, setFilterPrioritas] = useState("Semua");
     const [filterTanggalPenilaian, setFilterTanggalPenilaian] = useState("");
     const [filterWaktuPenilaian, setFilterWaktuPenilaian] = useState("Semua");
-    
+
     // Pemeliharaan filters
     const [filterStatusPemeliharaan, setFilterStatusPemeliharaan] = useState("Semua");
     const [filterTanggalPemeliharaan, setFilterTanggalPemeliharaan] = useState("");
     const [filterWaktuPemeliharaan, setFilterWaktuPemeliharaan] = useState("Semua");
-    
+
     // Scan filters
     const [filterLokasiScan, setFilterLokasiScan] = useState("Semua");
     const [filterTanggalScan, setFilterTanggalScan] = useState("");
@@ -470,8 +470,8 @@ export default function Laporan() {
                                 resetFilters();
                             }}
                             className={`relative rounded-2xl shadow-lg p-5 text-white overflow-hidden group transition-all duration-300 text-left ${isActive
-                                    ? `bg-gradient-to-br ${tab.color} scale-105 ring-4 ring-white/50`
-                                    : "bg-gradient-to-br from-gray-400 to-gray-500 hover:scale-105 opacity-75 hover:opacity-100"
+                                ? `bg-gradient-to-br ${tab.color} scale-105 ring-4 ring-white/50`
+                                : "bg-gradient-to-br from-gray-400 to-gray-500 hover:scale-105 opacity-75 hover:opacity-100"
                                 }`}
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500"></div>
@@ -500,8 +500,8 @@ export default function Laporan() {
                                         setSearch("");
                                     }}
                                     className={`flex-1 min-w-[140px] py-3.5 px-4 font-semibold transition-all text-sm ${activeTab === tab.key
-                                            ? "bg-blue-500 text-white border-b-4 border-blue-700"
-                                            : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                                        ? "bg-blue-500 text-white border-b-4 border-blue-700"
+                                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                                         }`}
                                 >
                                     <div className="flex items-center justify-center gap-2">
@@ -689,16 +689,16 @@ export default function Laporan() {
                                                     <td
                                                         key={cellIndex}
                                                         className={`px-4 py-3 text-sm text-gray-700 whitespace-nowrap ${cellIndex === 0
-                                                                ? "text-center font-semibold"
-                                                                : ""
+                                                            ? "text-center font-semibold"
+                                                            : ""
                                                             }`}
                                                     >
                                                         {/* Special rendering for status-like cells */}
                                                         {activeTab === "aset" && cellIndex === 7 ? (
                                                             <span
                                                                 className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cell === "Aktif"
-                                                                        ? "bg-lime-100 text-lime-800"
-                                                                        : "bg-red-100 text-red-800"
+                                                                    ? "bg-lime-100 text-lime-800"
+                                                                    : "bg-red-100 text-red-800"
                                                                     }`}
                                                             >
                                                                 {cell}
@@ -706,10 +706,10 @@ export default function Laporan() {
                                                         ) : activeTab === "user" && cellIndex === 3 ? (
                                                             <span
                                                                 className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cell === "Administrator"
-                                                                        ? "bg-purple-100 text-purple-800"
-                                                                        : cell === "Petugas"
-                                                                            ? "bg-yellow-100 text-yellow-800"
-                                                                            : "bg-lime-100 text-lime-800"
+                                                                    ? "bg-purple-100 text-purple-800"
+                                                                    : cell === "Petugas"
+                                                                        ? "bg-yellow-100 text-yellow-800"
+                                                                        : "bg-lime-100 text-lime-800"
                                                                     }`}
                                                             >
                                                                 {cell}
@@ -717,10 +717,10 @@ export default function Laporan() {
                                                         ) : activeTab === "penilaian" && cellIndex === 8 ? (
                                                             <span
                                                                 className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${cell === "Tinggi"
-                                                                        ? "bg-red-500"
-                                                                        : cell === "Sedang"
-                                                                            ? "bg-yellow-500"
-                                                                            : "bg-lime-600"
+                                                                    ? "bg-red-500"
+                                                                    : cell === "Sedang"
+                                                                        ? "bg-yellow-500"
+                                                                        : "bg-lime-600"
                                                                     }`}
                                                             >
                                                                 {cell}
@@ -728,8 +728,8 @@ export default function Laporan() {
                                                         ) : activeTab === "pemeliharaan" && cellIndex === 8 ? (
                                                             <span
                                                                 className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${cell === "Selesai"
-                                                                        ? "bg-lime-600"
-                                                                        : "bg-yellow-500"
+                                                                    ? "bg-lime-600"
+                                                                    : "bg-yellow-500"
                                                                     }`}
                                                             >
                                                                 {cell}
